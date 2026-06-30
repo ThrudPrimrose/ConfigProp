@@ -1,0 +1,263 @@
+% ============================================================================
+% All entries verified against primary / dblp / Crossref sources (2026-06-30).
+% Corrections applied this pass:
+%   - LMCAS: IEEE EuroS&P 2022 (NOT CCS 2022).
+%   - SFAC (ASE 2000): single author Sandrine Blazy (NOT "Blazy & Facon";
+%     Facon co-authored only the earlier 1993 comprehension papers).
+%   - OCCAM-v2: Navas & Gehani (NOT Gurfinkel/Gadelha).
+%   - PetaBricks input-sensitivity: 4th author is Xipeng Shen (NOT Zhang).
+%   - Lawson SYCL covering-subset paper: Lawson & Goli, Parallel Computing 2021
+%     (arXiv 2008.13145), NOT the earlier single-author 2003.06795 case study.
+% DOIs flagged as pattern-derived (publisher pages 403-blocked): lawson_sycl,
+% bitwise -- bit-exact recheck before camera-ready.
+% ============================================================================
+
+% --- Case studies -----------------------------------------------------------
+
+@article{icon,
+  author  = {Z\"angl, G\"unther and Reinert, Daniel and R\'ipodas, Pilar and Baldauf, Michael},
+  title   = {The {ICON} ({ICOsahedral} {Non-hydrostatic}) modelling framework of {DWD} and {MPI-M}: Description of the non-hydrostatic dynamical core},
+  journal = {Quarterly Journal of the Royal Meteorological Society},
+  volume  = {141},
+  number  = {687},
+  pages   = {563--579},
+  year    = {2015},
+  doi     = {10.1002/qj.2378}
+}
+
+@article{ecrad2024,
+  author  = {Ukkonen, Peter and Hogan, Robin J.},
+  title   = {Twelve Times Faster yet Accurate: A New State-Of-The-Art in Radiation Schemes via Performance and Spectral Optimization},
+  journal = {Journal of Advances in Modeling Earth Systems},
+  volume  = {16},
+  number  = {1},
+  pages   = {e2023MS003932},
+  year    = {2024},
+  doi     = {10.1029/2023MS003932}
+}
+
+% --- Partial evaluation of scientific Fortran -------------------------------
+
+@article{berlinweise,
+  author  = {Andrew A. Berlin and Daniel Weise},
+  title   = {Compiling Scientific Code Using Partial Evaluation},
+  journal = {Computer},
+  volume  = {23},
+  number  = {12},
+  pages   = {25--37},
+  year    = {1990},
+  doi     = {10.1109/2.62091}
+}
+
+@article{sfac,
+  author  = {Sandrine Blazy},
+  title   = {Specifying and Automatically Generating a Specialization Tool for {Fortran 90}},
+  journal = {Automated Software Engineering},
+  volume  = {7},
+  number  = {4},
+  pages   = {345--376},
+  year    = {2000},
+  doi     = {10.1023/A:1026594220718}
+}
+
+@article{kleinrubatscher,
+  author  = {Paul Kleinrubatscher and Albert Kriegshaber and Robert Z{\"o}chling and Robert Gl{\"u}ck},
+  title   = {{Fortran} Program Specialization},
+  journal = {ACM SIGPLAN Notices},
+  volume  = {30},
+  number  = {4},
+  pages   = {61--70},
+  year    = {1995},
+  doi     = {10.1145/202176.202184}
+}
+
+% --- Value and argument specialization --------------------------------------
+
+@inproceedings{calder_valueprofiling,
+  author    = {Brad Calder and Peter Feller and Alan Eustace},
+  title     = {Value Profiling},
+  booktitle = {Proceedings of the 30th Annual IEEE/ACM International Symposium on Microarchitecture (MICRO 30)},
+  pages     = {259--269},
+  publisher = {IEEE Computer Society},
+  year      = {1997},
+  doi       = {10.1109/MICRO.1997.645816}
+}
+
+@inproceedings{rifs,
+  author    = {Saba Jamilan and Snehasish Kumar and Heiner Litz},
+  title     = {{RIFS}: Run-Time Invariant Function Specialization},
+  booktitle = {Proceedings of the 35th ACM SIGPLAN International Conference on Compiler Construction (CC 2026)},
+  pages     = {40--52},
+  publisher = {ACM},
+  year      = {2026},
+  doi       = {10.1145/3771775.3786274}
+}
+
+% --- Glacial variables and neck-based specialization ------------------------
+
+@article{glacial,
+  author  = {Tito Autrey and Michael Wolfe},
+  title   = {Initial Results for Glacial Variable Analysis},
+  journal = {International Journal of Parallel Programming},
+  volume  = {26},
+  number  = {1},
+  pages   = {43--64},
+  year    = {1998},
+  doi     = {10.1023/A:1018739006820}
+}
+
+@inproceedings{lmcas,
+  author    = {Mohannad Alhanahnah and Rithik Jain and Vaibhav Rastogi and Somesh Jha and Thomas Reps},
+  title     = {Lightweight, Multi-Stage, Compiler-Assisted Application Specialization},
+  booktitle = {2022 IEEE 7th European Symposium on Security and Privacy (EuroS\&P)},
+  pages     = {251--269},
+  publisher = {IEEE},
+  year      = {2022},
+  doi       = {10.1109/EuroSP53844.2022.00024}
+}
+
+% --- Type-based devirtualization --------------------------------------------
+
+@inproceedings{cha_dgc,
+  author    = {Jeffrey Dean and David Grove and Craig Chambers},
+  title     = {Optimization of Object-Oriented Programs Using Static Class Hierarchy Analysis},
+  booktitle = {ECOOP'95 --- Object-Oriented Programming, 9th European Conference},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {952},
+  pages     = {77--101},
+  publisher = {Springer},
+  year      = {1995},
+  doi       = {10.1007/3-540-49538-X_5}
+}
+
+@article{julia,
+  author  = {Jeff Bezanson and Alan Edelman and Stefan Karpinski and Viral B. Shah},
+  title   = {Julia: A Fresh Approach to Numerical Computing},
+  journal = {SIAM Review},
+  volume  = {59},
+  number  = {1},
+  pages   = {65--98},
+  year    = {2017},
+  doi     = {10.1137/141000671}
+}
+
+@misc{wholeprogramdevirt,
+  author       = {{The LLVM Project}},
+  title        = {{WholeProgramDevirt}: Whole-Program Devirtualization Pass},
+  howpublished = {LLVM source tree, \texttt{llvm/lib/Transforms/IPO/WholeProgramDevirt.cpp}},
+  note         = {See also P. Padlewski, ``Devirtualization in LLVM and Clang,'' The LLVM Project Blog, Mar. 10, 2017},
+  year         = {2017}
+}
+
+% --- Configuration-driven debloating and specialization ---------------------
+
+@article{trimmer,
+  author  = {Aatira Anum Ahmad and Abdul Rafae Noor and Hashim Sharif and Usama Hameed and Shoaib Asif and Mubashir Anwar and Ashish Gehani and Fareed Zaffar and Junaid Haroon Siddiqui},
+  title   = {{TRIMMER}: An Automated System for Configuration-Based Software Debloating},
+  journal = {IEEE Transactions on Software Engineering},
+  volume  = {48},
+  number  = {9},
+  pages   = {3485--3505},
+  year    = {2022},
+  doi     = {10.1109/TSE.2021.3095716}
+}
+
+@article{occamv2,
+  author  = {Jorge A. Navas and Ashish Gehani},
+  title   = {{OCCAM-v2}: Combining Static and Dynamic Analysis for Effective and Efficient Whole-Program Specialization},
+  journal = {Communications of the ACM},
+  volume  = {66},
+  number  = {4},
+  pages   = {40--47},
+  year    = {2023},
+  doi     = {10.1145/3583112}
+}
+
+@inproceedings{eurosec_debloat,
+  author    = {Hyungjoon Koo and Seyedhamed Ghavamnia and Michalis Polychronakis},
+  title     = {Configuration-Driven Software Debloating},
+  booktitle = {Proceedings of the 12th European Workshop on Systems Security (EuroSec '19)},
+  pages     = {9:1--9:6},
+  year      = {2019},
+  doi       = {10.1145/3301417.3312501}
+}
+
+@inproceedings{ternava_sac,
+  author    = {Xhevahire T{\"e}rnava and Mathieu Acher and Benoit Combemale},
+  title     = {Specialization of Run-time Configuration Space at Compile-time: An Exploratory Study},
+  booktitle = {Proceedings of the 38th ACM/SIGAPP Symposium on Applied Computing (SAC '23)},
+  pages     = {1459--1468},
+  year      = {2023},
+  doi       = {10.1145/3555776.3578613}
+}
+
+% --- Variant-set selection --------------------------------------------------
+
+@misc{hochgrafpai,
+  author        = {Robert Hochgraf and Sreepathi Pai},
+  title         = {A Few Fit Most: Improving Performance Portability of {SGEMM} on {GPUs} using Multi-Versioning},
+  year          = {2025},
+  eprint        = {2507.15277},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+  doi           = {10.48550/arXiv.2507.15277}
+}
+
+@article{lawson_sycl,
+  author  = {John Lawson and Mehdi Goli},
+  title   = {Performance portability through machine learning guided kernel selection in {SYCL} libraries},
+  journal = {Parallel Computing},
+  volume  = {107},
+  pages   = {102813},
+  year    = {2021},
+  doi     = {10.1016/j.parco.2021.102813}
+}
+
+@inproceedings{petabricks_inputaware,
+  author    = {Yufei Ding and Jason Ansel and Kalyan Veeramachaneni and Xipeng Shen and Una-May O'Reilly and Saman Amarasinghe},
+  title     = {Autotuning Algorithmic Choice for Input Sensitivity},
+  booktitle = {Proceedings of the 36th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI 2015)},
+  pages     = {379--390},
+  publisher = {ACM},
+  year      = {2015},
+  doi       = {10.1145/2737924.2737969}
+}
+
+@inproceedings{siegmund_fse15,
+  author    = {Norbert Siegmund and Alexander Grebhahn and Sven Apel and Christian K{\"a}stner},
+  title     = {Performance-Influence Models for Highly Configurable Systems},
+  booktitle = {Proceedings of the 2015 10th Joint Meeting on Foundations of Software Engineering (ESEC/FSE 2015)},
+  pages     = {284--294},
+  publisher = {ACM},
+  year      = {2015},
+  doi       = {10.1145/2786805.2786845}
+}
+
+% --- Index narrowing and abstract domains -----------------------------------
+
+@inproceedings{bitwise,
+  author    = {Mark Stephenson and Jonathan Babb and Saman Amarasinghe},
+  title     = {Bitwidth Analysis with Application to Silicon Compilation},
+  booktitle = {Proceedings of the ACM SIGPLAN 2000 Conference on Programming Language Design and Implementation (PLDI 2000)},
+  pages     = {108--120},
+  publisher = {ACM},
+  year      = {2000},
+  doi       = {10.1145/349299.349317}
+}
+
+@inproceedings{reducedproduct,
+  author    = {Patrick Cousot and Radhia Cousot},
+  title     = {Systematic Design of Program Analysis Frameworks},
+  booktitle = {Proceedings of the 6th ACM SIGACT-SIGPLAN Symposium on Principles of Programming Languages (POPL 1979)},
+  pages     = {269--282},
+  publisher = {ACM},
+  year      = {1979},
+  doi       = {10.1145/567752.567778}
+}
+
+@inproceedings{memory_cgo24,
+  title     = {{MEMORY}: Live-Range and Dead-Element Analysis over Aggregate Data Structures},
+  booktitle = {Proceedings of the 2024 IEEE/ACM International Symposium on Code Generation and Optimization (CGO)},
+  year      = {2024},
+  note      = {TODO: verify exact title/authors/pages/DOI against the CGO 2024 proceedings; PDF at users.cs.northwestern.edu/~simonec/files/Research/papers/MEMORY\_CGO\_2024.pdf}
+}

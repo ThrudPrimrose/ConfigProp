@@ -1,0 +1,88 @@
+\section{The Configuration Tax}
+\label{sec:background}
+
+\subsection{Configuration as glacial module state}
+A production Earth-system or materials model is parameterized by a configuration
+file---a Fortran \emph{namelist} of a few hundred variables that select solvers,
+toggle physics, and fix grid and spectral dimensions. At startup the model executes
+\lstinline[style=fortran]|READ(NML=...)| once, depositing each value into a field
+of a derived type in a configuration module (in ICON, \texttt{mo\_run\_config},
+\texttt{mo\_dynamics\_config}, \texttt{mo\_nonhydrostatic\_config}). Every consumer
+then reaches the value through \lstinline[style=fortran]|USE module, ONLY: var|.
+These variables are written exactly once, at initialization, and only read during
+the thousands of timesteps that follow: they are \emph{glacial}~\cite{glacial}. They
+are also exactly the values a compiler cannot see---read behind an I/O barrier,
+held in module-level state, and consumed in a compute phase the compiler does not
+distinguish from initialization.
+
+\subsection{Why \texttt{-O3} and LTO do not help}
+\label{sec:whycompilers}
+It is tempting to assume that whole-program optimization recovers these constants.
+To test this precisely we take the NAS~LU benchmark as a single translation unit
+whose \texttt{COMMON} blocks are rewritten to module variables---the same shape as a
+configuration module---and ask whether the LLVM pipeline can fold a representative
+grid bound (\texttt{nz}) into the dozens of loops that use it.
+\Cref{tab:lu} reports the result across three settings (flang-new-21,
+LLVM~21).\footnote{Full reproduction (HLFIR + LLVM IR at \texttt{-O0/-O2/-O3} and the
+whole-program LTO test): \texttt{experiments/lu\_globals/reproduce.sh}.}
+
+\begin{table}[t]
+  \centering
+  \caption{\textbf{[PROVISIONAL --- experiment under revision, see PLAN.md.]} Folding
+  a configuration-style module global (\texttt{nz}, a loop bound) in NAS~LU. SCCP never
+  participates (an SSA-value pass; globals are memory). Rows A/B are solid; row C is
+  currently only a presence-gated partial fold (the injection was a runtime store, not
+  a source constant) and must be redone.}
+  \label{tab:lu}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Setting & Linkage & \texttt{nz} bound folded? \\
+    \midrule
+    A. as-is, \texttt{-O3} (value never set in TU)        & external & \textbf{no} --- value absent \\
+    B. runtime store, single-TU \texttt{-O3}              & external & \textbf{no} --- external linkage \\
+    C. runtime store, whole-program LTO + internalize     & demoted to \texttt{i1} & \textbf{partial} --- presence-gated \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\td{TODO/CORRECTION (skeptical review): row C does NOT cleanly fold \texttt{nz}.
+GlobalOpt demoted the global to a one-bit "has-init-run" flag and rematerialized the
+bound as \texttt{select i1 \%flag, i32 33, i32 0} (6 sites; 21 others got literal 33),
+because the value was injected as a RUNTIME STORE, not a source constant. REDO injecting
+a Fortran \texttt{parameter} / constant initializer (what config-prop produces) for a
+clean fold; add a row with a real \texttt{READ(NML=...)} so row A is literally the I/O
+barrier; tie the metric to "bound is a compile-time constant", not load-counts.}
+
+Rows A and B isolate two real barriers: \emph{value presence} (A --- with no constant
+in the program nothing can be folded) and \emph{linkage} (B --- an external-linkage
+module/\texttt{COMMON} global is not foldable single-TU; a unit must assume another may
+write it). \td{QUESTION: is the third regime (a true source-constant injection in a
+closed program) a CLEAN fold? Until the redo, claim only that config-prop supplies a
+source-level constant the pipeline otherwise lacks; do not assert "LTO folds it."}
+Production configuration state fails the value-presence and linkage conditions; whether
+the residual is "structural" in the strong sense needs the redone row C.
+
+\subsection{What deployment-time specialization adds}
+\Cref{tab:lu} also delimits what is \emph{not} novel: once a scalar value is supplied
+\emph{as a source constant} to a closed program, the standard cascade---constant
+propagation, dead-code elimination, fusion---does the rest (subject to the row-C redo). Our contribution for
+that case is the bridge of \Cref{sec:recovery}: recovering the value statically from
+the configuration file, the one input the compiler structurally cannot obtain. The
+contributions that go \emph{beyond} a supplied scalar---narrowing index storage
+from a recovered interval, and devirtualizing from a recovered type-set
+(\Cref{sec:spec})---are optimizations the right column of \Cref{tab:lu} does not
+perform at any setting, and are where the bulk of our speedup originates.
+
+\td{DEEP ARG A (PLAN.md 2.A) --- phase-ordering / config-prop reparameterizes the
+INPUT. Toolchain $B=(T_n\circ\dots\circ T_1)(S)$ ends in LTO; the config value
+$v=F(\mathrm{var})$ is not derivable from $S$ at any phase, so the terminal LTO sink
+cannot fold it. Config-prop is not a phase: it computes
+$\mathrm{compile}(\mathrm{inject}(S,F))$. LU row C is this with inject done by hand;
+row A is $\mathrm{compile}(S)$. "Why not LTO" fails on phase-ordering, not capability.}
+\td{DEEP ARG D (PLAN.md 2.D) --- the "isn't this just recompile-per-config?"
+three-layer floor: (1) UNAVAILABLE (values are runtime reads into mutable external
+module state; baking in needs the glacial may-write proof = the contribution);
+(2) INFEASIBLE (full per-config rebuild of a 1M-line model at every site; covering set
+amortizes); (3) INSUFFICIENT (a scalar narrows no index type, devirtualizes no
+dispatch). Consider a short Discussion subsection.}

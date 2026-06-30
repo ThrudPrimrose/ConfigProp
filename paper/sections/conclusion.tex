@@ -1,0 +1,23 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+\td{Restate: the config file is an exact deployment-time profile; the configuration
+tax is structural (LU experiment); deployment-time specialization bridges the I/O
+barrier and, via interval arithmetic on collections, lifts a recovered value to a
+type-set (devirtualization) and an interval (index narrowing) that the standard
+pipeline cannot reach.}
+\td{Future work: interval (non-singleton) specialization; integration as a Flang
+FIR pass; beyond Fortran (C/C++ config structs, static-shaped Python/JAX configs).}
+\td{Limitations --- CONCEDE openly (skeptical review hard-to-answer items):
+(1) C2 "enables lowering" is DaCe-frontend-specific, not a general reachability result;
+in a mature backend C2 is a pure optimization. (2) The strongest standard-tool baseline
+(values injected as constants under LTO) isolates C2+C3 only --- it presupposes C1's
+recovery, so C1 has no standard comparator; substantiate C1 separately via the
+may-write soundness theorem + recovery precision/recall on real namelists. (3) The
+may-write certification must cover MPI/RMA, C-interop, and procedure-pointer write
+channels, and faces a callgraph-completeness circularity with the indirect dispatch C2
+removes. (4) C3 lacks a real operational-namelist distribution. (5) float
+bit-reproducibility holds only with FP-contraction flags fixed. (6) QUESTION: is
+"deployment-time specialization, a distinct lifecycle point" a real contribution, or
+does it collapse to "AOT compilation with config-file-derived inputs + startup binary
+selection"? Recast as the latter unless a genuinely deployment-time mechanism is shown.}

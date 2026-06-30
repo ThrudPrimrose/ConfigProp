@@ -1,0 +1,51 @@
+\section{Specialization}
+\label{sec:spec}
+
+\td{The four optimizations as the four residualization cases of
+\Cref{sec:approach}. \#4 (type-domain devirtualization) is the centerpiece.}
+
+\subsection{Constant propagation and finite-set specialization (\#1, \#2)}
+\td{Singleton $\to$ constant (the bridge supplies the value; the cascade is
+standard --- be honest, cf.\ \Cref{tab:lu} row C). Finite value-set $\to$
+cross-product variants; the \texttt{\{lvn\_only,istep\}} fusion is the running
+example. Emphasize the SECOND-ORDER cascade the value unlocks (fusion across the
+former config-branch barrier), isolated from dead-code pruning.}
+
+\subsection{Index narrowing from a recovered interval (\#3)}
+\td{An index array used only for indirect access is bounded by the shape a config
+variable fixes; narrow to the smallest integer type. Not reachable by constant
+injection + LTO. Distinguish from Bitwise~\cite{bitwise} (static-provable ranges
+only).}
+
+\subsection{Type-domain devirtualization (\#2 of types / \#4) --- centerpiece}
+\td{Extend interval/value-set analysis to types (the $\rho$ reduction of
+\Cref{sec:approach}): a config value selects one of a finite type-set; lower the
+v-table to an \texttt{if}-chain pruned by the recovered value.}
+The \emph{default} production Fortran pipeline does not perform this optimization.
+Whole-program devirtualization is C++-vtable-specific, keyed off \texttt{!type}
+metadata and the \texttt{llvm.type.test}
+intrinsic;\footnote{\url{https://clang.llvm.org/docs/LTOVisibility.html};
+\url{https://llvm.org/docs/TypeMetadata.html}.} \texttt{flang-new} emits none of that
+metadata and rejects \texttt{-fwhole-program-vtables}, and both \texttt{flang-new -O3}
+(even for a statically-known \texttt{allocate}) and \texttt{nvfortran -O4} leave the
+dispatch as an indirect call.\footnote{Reproduction:
+\texttt{experiments/devirt\_wpd/}.}
+\td{VERIFY/QUESTION (skeptical review): does flang HAVE a FIR-level
+\texttt{fir.dispatch}$\to$\texttt{fir.call} devirtualization that is merely disabled in
+the default pipeline? Locate it in the flang/MLIR source and test whether enabling it
+devirtualizes \texttt{known.f90}. If it exists, weaken the claim from "no toolchain can"
+to "the default pipeline does not, and no compile-time devirt can resolve a type fixed
+by a config value behind the I/O barrier".}
+\td{DEMOTED (was overclaimed): the "devirtualization enables lowering at all / parallel
+to C1" framing is SPECIFIC to the DaCe frontend, which has no SDFG node for
+\texttt{fir.dispatch}. In a mature LLVM/Flang backend the dispatch lowers fine and C2 is
+a pure optimization. Do not call it parallel to C1.}
+\td{Sharper C2 framing: the type-set is fixed by a config value behind the I/O barrier,
+so no compile-time devirt (local or WPD) can resolve it; config-prop supplies the value
+(value$\to$type lift), then devirt follows. For the C2 PERFORMANCE number, build an
+LLVM-path baseline (indirect-dispatch vs.\ devirtualized binary), not DaCe's
+"devirt vs.\ nothing-runs".}
+\td{Turn the verified toolchain evidence into a small table: flang / nvfortran / clang
+$\times$ \{accepts flag, emits \texttt{!type}, devirtualizes known type\}.}
+\td{Scope the reachability claim honestly: it is sharpest in the dataflow backend;
+in an LLVM backend C2 reverts to (still novel) value$\to$type dispatch elimination.}

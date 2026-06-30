@@ -1,0 +1,69 @@
+% Configuration-Guided Optimization --- CGO submission
+% Format: ACM acmart/sigconf, double-blind (review + anonymous).
+% Swap to IEEEtran if the CGO call mandates it; section files are format-agnostic prose.
+\documentclass[sigconf,review,anonymous]{acmart}
+
+\settopmatter{printacmref=false}
+\setcopyright{none}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{cleveref}
+
+% TODO marker: preserved in source, NOT rendered (acts as a comment).
+% Flip to the rendered form below while drafting if you want the boxes back.
+\long\def\td#1{}
+% \usepackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
+% \long\def\td#1{\todo[inline,color=yellow!35,size=\footnotesize]{\textbf{TODO:} #1}}
+
+% --- Fortran listing style used for the motivating examples -------------------
+\definecolor{cfgkw}{rgb}{0.10,0.10,0.55}
+\definecolor{cfgcomment}{rgb}{0.30,0.45,0.30}
+\definecolor{cfghi}{rgb}{0.70,0.10,0.10}
+\lstdefinestyle{fortran}{
+  language=[90]Fortran,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{cfgkw}\bfseries,
+  commentstyle=\color{cfgcomment}\itshape,
+  morekeywords={nlev,nflatlev},
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  numbers=none,
+  aboveskip=4pt,belowskip=2pt,
+}
+
+\begin{document}
+
+\title{Interval Arithmetic on Collections: Configuration-Guided
+Specialization of Production Scientific Codes}
+
+% Authors omitted for double-blind review.
+\author{Anonymous Author(s)}
+\affiliation{\institution{}\country{}}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\maketitle
+
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/approach}
+\input{sections/recovery}
+\input{sections/specialization}
+\input{sections/variants}
+\input{sections/implementation}
+\input{sections/evaluation}
+\input{sections/related}
+\input{sections/conclusion}
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+\end{document}

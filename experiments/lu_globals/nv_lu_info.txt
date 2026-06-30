@@ -1,0 +1,788 @@
+nvfortran-Warning-The option -Mipa has been deprecated and is ignored.
+
+lu_const.F90:
+nvdriver.f90:
+lu_const.F90:
+dolu:
+      0, subprogram not inlined -- missing prototype during crossing files: 
+     90, domain inlined, size=8, file lu_const.F90 (101)
+     91, setcoeff inlined, size=67, file lu_const.F90 (124)
+     92, setbv inlined, size=136
+         243, Loop not fused: dependence chain to sibling loop
+         245, 3 loops fused
+              Generated vector simd code for the loop
+         254, Loop not fused: dependence chain to sibling loop
+         256, 3 loops fused
+              Generated vector simd code for the loop
+         265, Loop not fused: different loop trip count
+         267, 3 loops fused
+              Generated vector simd code for the loop
+     93, setiv inlined, size=128
+         299, 2 loops fused
+              Generated vector simd code for the loop
+         311, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         316, Loop not fused: different loop trip count
+              5 loops fused
+              Generated vector simd code for the loop
+     94, erhs inlined, size=523, file lu_const.F90 (337)
+         354, Loop not fused: enclosed in different number of nests
+         355, Outer loop unrolled 1 times (completely unrolled)
+         356, Outer loop unrolled 1 times (completely unrolled)
+         357, Generated vector simd code for the loop
+         364, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         369, Generated vector simd code for the loop
+         377, Loop not fused: dependence chain to sibling loop
+              Loop not vectorized/parallelized: too deeply nested
+         379, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         389, Loop not fused: different loop trip count
+         390, Generated vector simd code for the loop
+         395, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         416, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         424, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         425, Loop not fused: different loop trip count
+         430, Generated vector simd code for the loop
+         435, Generated vector simd code for the loop
+         443, Loop not fused: dependence chain to sibling loop
+              Loop not vectorized/parallelized: too deeply nested
+         445, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         455, Loop not fused: different loop trip count
+         456, Generated vector simd code for the loop
+         461, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         482, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         490, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         491, Loop not fused: different loop trip count
+         496, Generated vector simd code for the loop
+         501, Generated vector simd code for the loop
+         509, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         511, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         521, Loop not fused: different loop trip count
+         522, Generated vector simd code for the loop
+         527, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         548, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         556, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         557, Loop not fused: different loop trip count
+         562, Generated vector simd code for the loop
+         567, Generated vector simd code for the loop
+     95, ssor inlined, size=1961
+         295, FMA (fused multiply-add) instruction(s) generated
+         324, FMA (fused multiply-add) instruction(s) generated
+         357, Loop nest collapsed
+         371, FMA (fused multiply-add) instruction(s) generated
+         380, FMA (fused multiply-add) instruction(s) generated
+         391, FMA (fused multiply-add) instruction(s) generated
+         396, FMA (fused multiply-add) instruction(s) generated
+         417, FMA (fused multiply-add) instruction(s) generated
+         425, FMA (fused multiply-add) instruction(s) generated
+         431, FMA (fused multiply-add) instruction(s) generated
+         436, FMA (fused multiply-add) instruction(s) generated
+         446, FMA (fused multiply-add) instruction(s) generated
+         457, FMA (fused multiply-add) instruction(s) generated
+         462, FMA (fused multiply-add) instruction(s) generated
+         483, FMA (fused multiply-add) instruction(s) generated
+         491, FMA (fused multiply-add) instruction(s) generated
+         497, FMA (fused multiply-add) instruction(s) generated
+         502, FMA (fused multiply-add) instruction(s) generated
+         512, FMA (fused multiply-add) instruction(s) generated
+         523, FMA (fused multiply-add) instruction(s) generated
+         528, FMA (fused multiply-add) instruction(s) generated
+         549, FMA (fused multiply-add) instruction(s) generated
+         557, FMA (fused multiply-add) instruction(s) generated
+         563, FMA (fused multiply-add) instruction(s) generated
+         568, FMA (fused multiply-add) instruction(s) generated
+         587, Loop not fused: enclosed in different number of nests
+         590, Outer loop unrolled 1 times (completely unrolled)
+         591, Outer loop unrolled 1 times (completely unrolled)
+         592, Loop nest collapsed
+              Generated vector simd code for the loop
+         593, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         610, Loop not vectorized/parallelized: too deeply nested
+         613, Generated vector simd code for the loop
+         620, Loop not vectorized/parallelized: contains call
+         621, Loop not fused: function call before adjacent loop
+              -O4 optimization: guarded floating point expression hoisted
+              FMA (fused multiply-add) instruction(s) generated
+         626, Loop not vectorized/parallelized: contains call
+         627, Loop not fused: function call before adjacent loop
+              -O4 optimization: guarded floating point expression hoisted
+              FMA (fused multiply-add) instruction(s) generated
+         633, Loop not fused: function call before adjacent loop
+              Loop not vectorized/parallelized: too deeply nested
+         636, Generated vector simd code for the loop
+         637, FMA (fused multiply-add) instruction(s) generated
+         647, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         680, Generated vector simd code for the loop
+         681, FMA (fused multiply-add) instruction(s) generated
+         690, Loop not fused: different controlling conditions
+              Loop not fused: dependence chain to sibling loop
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         691, -O4 optimization: guarded floating point expression hoisted
+         692, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         693, FMA (fused multiply-add) instruction(s) generated
+         704, Loop not fused: different loop trip count
+         705, Generated vector simd code for the loop
+         706, FMA (fused multiply-add) instruction(s) generated
+         710, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         711, FMA (fused multiply-add) instruction(s) generated
+         731, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         732, FMA (fused multiply-add) instruction(s) generated
+         739, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         740, Loop not fused: different loop trip count
+              FMA (fused multiply-add) instruction(s) generated
+         745, Generated vector simd code for the loop
+         746, FMA (fused multiply-add) instruction(s) generated
+         751, Generated vector simd code for the loop
+         752, FMA (fused multiply-add) instruction(s) generated
+         759, Loop not fused: different loop trip count
+              Loop not fused: dependence chain to sibling loop
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         760, Loop not fused: enclosed in different number of nests
+              -O4 optimization: guarded floating point expression hoisted
+         761, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         762, FMA (fused multiply-add) instruction(s) generated
+         773, Loop not fused: different loop trip count
+         774, Generated vector simd code for the loop
+         775, FMA (fused multiply-add) instruction(s) generated
+         779, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         780, FMA (fused multiply-add) instruction(s) generated
+         799, Loop not vectorized: unprofitable for target
+         800, FMA (fused multiply-add) instruction(s) generated
+         808, Loop not fused: different loop trip count
+         809, Generated vector simd code for the loop
+         810, FMA (fused multiply-add) instruction(s) generated
+         815, Loop not fused: different loop trip count
+         817, Generated vector simd code for the loop
+         818, FMA (fused multiply-add) instruction(s) generated
+         824, Generated vector simd code for the loop
+         825, FMA (fused multiply-add) instruction(s) generated
+         832, Loop not fused: complex flow graph
+              Loop not fused: function call before adjacent loop
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         833, -O4 optimization: guarded floating point expression hoisted
+         834, Loop not fused: enclosed in different number of nests
+         835, Rerolled basic block into loop
+              Generated vector simd code for rerolled loop
+         842, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         843, FMA (fused multiply-add) instruction(s) generated
+         854, Loop not fused: different loop trip count
+         855, Generated vector simd code for the loop
+         856, FMA (fused multiply-add) instruction(s) generated
+         860, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         861, FMA (fused multiply-add) instruction(s) generated
+         881, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         882, FMA (fused multiply-add) instruction(s) generated
+         889, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         890, Loop not fused: different loop trip count
+              FMA (fused multiply-add) instruction(s) generated
+         895, Generated vector simd code for the loop
+         896, FMA (fused multiply-add) instruction(s) generated
+         900, Generated vector simd code for the loop
+         901, FMA (fused multiply-add) instruction(s) generated
+         908, Loop not vectorized/parallelized: too deeply nested
+         958, Loop not vectorized: unprofitable for target
+         959, FMA (fused multiply-add) instruction(s) generated
+        1369, Loop not vectorized: unprofitable for target
+        1370, FMA (fused multiply-add) instruction(s) generated
+         245, exact inlined, size=18, file lu_const.F90 (279)
+         246, exact inlined, size=18, file lu_const.F90 (279)
+         256, exact inlined, size=18, file lu_const.F90 (279)
+         257, exact inlined, size=18, file lu_const.F90 (279)
+         267, exact inlined, size=18, file lu_const.F90 (279)
+         268, exact inlined, size=18, file lu_const.F90 (279)
+         317, exact inlined, size=18, file lu_const.F90 (279)
+         318, exact inlined, size=18, file lu_const.F90 (279)
+         319, exact inlined, size=18, file lu_const.F90 (279)
+         320, exact inlined, size=18, file lu_const.F90 (279)
+         321, exact inlined, size=18, file lu_const.F90 (279)
+         322, exact inlined, size=18, file lu_const.F90 (279)
+         602, rhs inlined, size=502, file lu_const.F90 (661)
+         604, subprogram not inlined -- array reshaping not enabled: l2norm, argument 4
+         621, jacld inlined, size=447, file lu_const.F90 (941)
+         623, subprogram not inlined -- array reshaping not enabled: blts, argument 5
+         627, jacu inlined, size=440, file lu_const.F90 (1354)
+         629, subprogram not inlined -- array reshaping not enabled: buts, argument 5
+         644, subprogram not inlined -- array reshaping not enabled: l2norm, argument 4
+         647, rhs inlined, size=502, file lu_const.F90 (661)
+         650, subprogram not inlined -- array reshaping not enabled: l2norm, argument 4
+setbv:
+    243, Loop not fused: different loop trip count
+         -O4 optimization: guarded floating point expression hoisted
+    245, exact inlined, size=18, file lu_const.F90 (279)
+         289, 3 loops fused
+              Generated vector simd code for the loop
+    246, exact inlined, size=18, file lu_const.F90 (279)
+    254, Loop not fused: dependence chain to sibling loop
+         -O4 optimization: guarded floating point expression hoisted
+    256, exact inlined, size=18, file lu_const.F90 (279)
+         289, 3 loops fused
+              Generated vector simd code for the loop
+    257, exact inlined, size=18, file lu_const.F90 (279)
+    265, -O4 optimization: guarded floating point expression hoisted
+    267, exact inlined, size=18, file lu_const.F90 (279)
+         289, 3 loops fused
+              Generated vector simd code for the loop
+    268, exact inlined, size=18, file lu_const.F90 (279)
+    295, FMA (fused multiply-add) instruction(s) generated
+exact:
+    294, Generated vector simd code for the loop
+    295, FMA (fused multiply-add) instruction(s) generated
+setiv:
+    295, FMA (fused multiply-add) instruction(s) generated
+    311, Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    313, -O4 optimization: guarded floating point expression hoisted
+    317, exact inlined, size=18, file lu_const.F90 (279)
+         289, Loop not fused: different loop trip count
+              5 loops fused
+              Generated vector simd code for the loop
+    318, exact inlined, size=18, file lu_const.F90 (279)
+    319, exact inlined, size=18, file lu_const.F90 (279)
+    320, exact inlined, size=18, file lu_const.F90 (279)
+    321, exact inlined, size=18, file lu_const.F90 (279)
+    322, exact inlined, size=18, file lu_const.F90 (279)
+         289, 2 loops fused
+              Generated vector simd code for the loop
+    324, FMA (fused multiply-add) instruction(s) generated
+    325, FMA (fused multiply-add) instruction(s) generated
+    326, FMA (fused multiply-add) instruction(s) generated
+    328, FMA (fused multiply-add) instruction(s) generated
+erhs:
+    354, Loop not fused: different controlling conditions
+         Loop not vectorized/parallelized: too deeply nested
+    357, Generated vector simd code for the loop
+    364, Loop not fused: different loop trip count
+         Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    366, -O4 optimization: guarded floating point expression hoisted
+    370, Generated vector simd code for the loop
+    371, FMA (fused multiply-add) instruction(s) generated
+    377, Loop not fused: different controlling conditions
+         Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    378, -O4 optimization: guarded floating point expression hoisted
+    379, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    382, FMA (fused multiply-add) instruction(s) generated
+    383, FMA (fused multiply-add) instruction(s) generated
+    386, FMA (fused multiply-add) instruction(s) generated
+    389, Loop not fused: different loop trip count
+    390, Generated vector simd code for the loop
+    391, FMA (fused multiply-add) instruction(s) generated
+    395, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    413, FMA (fused multiply-add) instruction(s) generated
+    416, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    417, FMA (fused multiply-add) instruction(s) generated
+    418, FMA (fused multiply-add) instruction(s) generated
+    419, FMA (fused multiply-add) instruction(s) generated
+    420, FMA (fused multiply-add) instruction(s) generated
+    421, FMA (fused multiply-add) instruction(s) generated
+    424, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    425, FMA (fused multiply-add) instruction(s) generated
+    426, FMA (fused multiply-add) instruction(s) generated
+    429, Loop not fused: different loop trip count
+    430, Generated vector simd code for the loop
+    431, FMA (fused multiply-add) instruction(s) generated
+    435, Generated vector simd code for the loop
+    436, FMA (fused multiply-add) instruction(s) generated
+    437, FMA (fused multiply-add) instruction(s) generated
+    443, Loop not fused: different loop trip count
+         Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    444, -O4 optimization: guarded floating point expression hoisted
+    445, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    448, FMA (fused multiply-add) instruction(s) generated
+    450, FMA (fused multiply-add) instruction(s) generated
+    452, FMA (fused multiply-add) instruction(s) generated
+    455, Loop not fused: different loop trip count
+    456, Generated vector simd code for the loop
+    457, FMA (fused multiply-add) instruction(s) generated
+    461, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    479, FMA (fused multiply-add) instruction(s) generated
+    482, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    483, FMA (fused multiply-add) instruction(s) generated
+    484, FMA (fused multiply-add) instruction(s) generated
+    485, FMA (fused multiply-add) instruction(s) generated
+    486, FMA (fused multiply-add) instruction(s) generated
+    487, FMA (fused multiply-add) instruction(s) generated
+    490, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    491, FMA (fused multiply-add) instruction(s) generated
+    492, FMA (fused multiply-add) instruction(s) generated
+    495, Loop not fused: different loop trip count
+    496, Generated vector simd code for the loop
+    497, FMA (fused multiply-add) instruction(s) generated
+    501, Generated vector simd code for the loop
+    502, FMA (fused multiply-add) instruction(s) generated
+    503, FMA (fused multiply-add) instruction(s) generated
+    509, Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    510, -O4 optimization: guarded floating point expression hoisted
+    511, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    514, FMA (fused multiply-add) instruction(s) generated
+    517, FMA (fused multiply-add) instruction(s) generated
+    518, FMA (fused multiply-add) instruction(s) generated
+    521, Loop not fused: different loop trip count
+    522, Generated vector simd code for the loop
+    523, FMA (fused multiply-add) instruction(s) generated
+    527, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    545, FMA (fused multiply-add) instruction(s) generated
+    548, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    549, FMA (fused multiply-add) instruction(s) generated
+    550, FMA (fused multiply-add) instruction(s) generated
+    551, FMA (fused multiply-add) instruction(s) generated
+    552, FMA (fused multiply-add) instruction(s) generated
+    553, FMA (fused multiply-add) instruction(s) generated
+    556, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    557, FMA (fused multiply-add) instruction(s) generated
+    558, FMA (fused multiply-add) instruction(s) generated
+    561, Loop not fused: different loop trip count
+    562, Generated vector simd code for the loop
+    563, FMA (fused multiply-add) instruction(s) generated
+    567, Generated vector simd code for the loop
+    568, FMA (fused multiply-add) instruction(s) generated
+    569, FMA (fused multiply-add) instruction(s) generated
+ssor:
+    589, Loop not fused: different loop trip count
+    590, Outer loop unrolled 1 times (completely unrolled)
+    591, Outer loop unrolled 1 times (completely unrolled)
+    592, Loop nest collapsed
+         Generated vector simd code for the loop
+    602, rhs inlined, size=502, file lu_const.F90 (661)
+         677, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+         680, Generated vector simd code for the loop
+         690, Loop not fused: different controlling conditions
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         691, -O4 optimization: guarded floating point expression hoisted
+         692, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         704, Loop not fused: different loop trip count
+         705, Generated vector simd code for the loop
+         710, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         731, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         739, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         740, Loop not fused: different loop trip count
+         745, Generated vector simd code for the loop
+         751, Generated vector simd code for the loop
+         759, Loop not fused: different loop trip count
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         760, Loop not fused: enclosed in different number of nests
+              -O4 optimization: guarded floating point expression hoisted
+         761, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         773, Loop not fused: different loop trip count
+         774, Generated vector simd code for the loop
+         779, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         799, Loop not vectorized: unprofitable for target
+         808, Loop not fused: different loop trip count
+         809, Generated vector simd code for the loop
+         815, Loop not fused: different loop trip count
+         817, Generated vector simd code for the loop
+         824, Generated vector simd code for the loop
+         832, Loop not fused: function call before adjacent loop
+              Loop not vectorized/parallelized: too deeply nested
+              -O4 optimization: guarded floating point expression hoisted
+         833, -O4 optimization: guarded floating point expression hoisted
+         834, Loop not fused: enclosed in different number of nests
+         835, Generated vector simd code for rerolled loop
+         842, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         854, Loop not fused: different loop trip count
+         855, Generated vector simd code for the loop
+         860, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         881, Loop not fused: different loop trip count
+              Loop not vectorized: unprofitable for target
+         889, Loop not fused: different loop trip count
+              Generated vector simd code for the loop
+         890, Loop not fused: different loop trip count
+         895, Generated vector simd code for the loop
+         900, Generated vector simd code for the loop
+    604, subprogram not inlined -- array reshaping not enabled: l2norm, argument 4
+    606, Loop not vectorized/parallelized: too deeply nested
+    610, Loop not vectorized/parallelized: too deeply nested
+    613, Generated vector simd code for the loop
+    620, Loop not vectorized/parallelized: contains call
+    621, jacld inlined, size=447, file lu_const.F90 (941)
+         957, Loop not fused: function call before adjacent loop
+              -O4 optimization: guarded floating point expression hoisted
+         958, Loop not vectorized: unprofitable for target
+    623, subprogram not inlined -- array reshaping not enabled: blts, argument 5
+    626, Loop not vectorized/parallelized: contains call
+    627, jacu inlined, size=440, file lu_const.F90 (1354)
+        1368, Loop not fused: function call before adjacent loop
+              -O4 optimization: guarded floating point expression hoisted
+        1369, Loop not vectorized: unprofitable for target
+    633, Loop not fused: function call before adjacent loop
+         Loop not vectorized/parallelized: too deeply nested
+    636, Generated vector simd code for the loop
+    637, FMA (fused multiply-add) instruction(s) generated
+    681, FMA (fused multiply-add) instruction(s) generated
+    693, FMA (fused multiply-add) instruction(s) generated
+    706, FMA (fused multiply-add) instruction(s) generated
+    711, FMA (fused multiply-add) instruction(s) generated
+    732, FMA (fused multiply-add) instruction(s) generated
+    740, FMA (fused multiply-add) instruction(s) generated
+    746, FMA (fused multiply-add) instruction(s) generated
+    752, FMA (fused multiply-add) instruction(s) generated
+    762, FMA (fused multiply-add) instruction(s) generated
+    775, FMA (fused multiply-add) instruction(s) generated
+    780, FMA (fused multiply-add) instruction(s) generated
+    800, FMA (fused multiply-add) instruction(s) generated
+    810, FMA (fused multiply-add) instruction(s) generated
+    818, FMA (fused multiply-add) instruction(s) generated
+    825, FMA (fused multiply-add) instruction(s) generated
+    835, Rerolled basic block into loop
+    843, FMA (fused multiply-add) instruction(s) generated
+    856, FMA (fused multiply-add) instruction(s) generated
+    861, FMA (fused multiply-add) instruction(s) generated
+    882, FMA (fused multiply-add) instruction(s) generated
+    890, FMA (fused multiply-add) instruction(s) generated
+    896, FMA (fused multiply-add) instruction(s) generated
+    901, FMA (fused multiply-add) instruction(s) generated
+    957, FMA (fused multiply-add) instruction(s) generated
+    959, FMA (fused multiply-add) instruction(s) generated
+   1368, FMA (fused multiply-add) instruction(s) generated
+   1370, FMA (fused multiply-add) instruction(s) generated
+rhs:
+    677, Loop not fused: different loop trip count
+         Loop not vectorized/parallelized: too deeply nested
+    680, Generated vector simd code for the loop
+    685, FMA (fused multiply-add) instruction(s) generated
+    690, Loop not fused: different controlling conditions
+         Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    691, -O4 optimization: guarded floating point expression hoisted
+    692, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    698, FMA (fused multiply-add) instruction(s) generated
+    701, FMA (fused multiply-add) instruction(s) generated
+    704, Loop not fused: different loop trip count
+    705, Generated vector simd code for the loop
+    706, FMA (fused multiply-add) instruction(s) generated
+    710, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    728, FMA (fused multiply-add) instruction(s) generated
+    731, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    732, FMA (fused multiply-add) instruction(s) generated
+    733, FMA (fused multiply-add) instruction(s) generated
+    734, FMA (fused multiply-add) instruction(s) generated
+    735, FMA (fused multiply-add) instruction(s) generated
+    736, FMA (fused multiply-add) instruction(s) generated
+    739, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    740, FMA (fused multiply-add) instruction(s) generated
+    741, FMA (fused multiply-add) instruction(s) generated
+    744, Loop not fused: different loop trip count
+    745, Generated vector simd code for the loop
+    746, FMA (fused multiply-add) instruction(s) generated
+    751, Generated vector simd code for the loop
+    752, FMA (fused multiply-add) instruction(s) generated
+    753, FMA (fused multiply-add) instruction(s) generated
+    759, Loop not fused: different loop trip count
+         Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    760, Loop not fused: enclosed in different number of nests
+         -O4 optimization: guarded floating point expression hoisted
+    761, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    768, FMA (fused multiply-add) instruction(s) generated
+    770, FMA (fused multiply-add) instruction(s) generated
+    773, Loop not fused: different loop trip count
+    774, Generated vector simd code for the loop
+    775, FMA (fused multiply-add) instruction(s) generated
+    779, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    796, FMA (fused multiply-add) instruction(s) generated
+    799, Loop not vectorized: unprofitable for target
+    800, FMA (fused multiply-add) instruction(s) generated
+    801, FMA (fused multiply-add) instruction(s) generated
+    802, FMA (fused multiply-add) instruction(s) generated
+    803, FMA (fused multiply-add) instruction(s) generated
+    804, FMA (fused multiply-add) instruction(s) generated
+    808, Loop not fused: different loop trip count
+    809, Generated vector simd code for the loop
+    810, FMA (fused multiply-add) instruction(s) generated
+    811, FMA (fused multiply-add) instruction(s) generated
+    815, Loop not fused: different loop trip count
+    817, Generated vector simd code for the loop
+    818, FMA (fused multiply-add) instruction(s) generated
+    824, Generated vector simd code for the loop
+    825, FMA (fused multiply-add) instruction(s) generated
+    826, FMA (fused multiply-add) instruction(s) generated
+    832, Loop not vectorized/parallelized: too deeply nested
+         -O4 optimization: guarded floating point expression hoisted
+    833, -O4 optimization: guarded floating point expression hoisted
+    834, Loop not fused: enclosed in different number of nests
+    835, Rerolled basic block into loop
+         Generated vector simd code for rerolled loop
+    842, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    850, FMA (fused multiply-add) instruction(s) generated
+    851, FMA (fused multiply-add) instruction(s) generated
+    854, Loop not fused: different loop trip count
+    855, Generated vector simd code for the loop
+    856, FMA (fused multiply-add) instruction(s) generated
+    860, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    878, FMA (fused multiply-add) instruction(s) generated
+    881, Loop not fused: different loop trip count
+         Loop not vectorized: unprofitable for target
+    882, FMA (fused multiply-add) instruction(s) generated
+    883, FMA (fused multiply-add) instruction(s) generated
+    884, FMA (fused multiply-add) instruction(s) generated
+    885, FMA (fused multiply-add) instruction(s) generated
+    886, FMA (fused multiply-add) instruction(s) generated
+    889, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    890, FMA (fused multiply-add) instruction(s) generated
+    891, FMA (fused multiply-add) instruction(s) generated
+    894, Loop not fused: different loop trip count
+    895, Generated vector simd code for the loop
+    896, FMA (fused multiply-add) instruction(s) generated
+    900, Generated vector simd code for the loop
+    901, FMA (fused multiply-add) instruction(s) generated
+    902, FMA (fused multiply-add) instruction(s) generated
+l2norm:
+    920, Loop not fused: different loop trip count
+         Generated vector simd code for the loop
+    924, Loop not fused: different loop trip count
+         Loop not vectorized/parallelized: too deeply nested
+    927, Generated vector simd code for the loop
+    928, FMA (fused multiply-add) instruction(s) generated
+    934, Generated vector simd code for the loop
+jacld:
+    957, -O4 optimization: guarded floating point expression hoisted
+         FMA (fused multiply-add) instruction(s) generated
+    958, Loop not vectorized: unprofitable for target
+    970, FMA (fused multiply-add) instruction(s) generated
+    977, FMA (fused multiply-add) instruction(s) generated
+    984, FMA (fused multiply-add) instruction(s) generated
+    987, FMA (fused multiply-add) instruction(s) generated
+    992, FMA (fused multiply-add) instruction(s) generated
+   1004, FMA (fused multiply-add) instruction(s) generated
+   1005, FMA (fused multiply-add) instruction(s) generated
+   1010, FMA (fused multiply-add) instruction(s) generated
+   1012, FMA (fused multiply-add) instruction(s) generated
+   1016, FMA (fused multiply-add) instruction(s) generated
+   1019, FMA (fused multiply-add) instruction(s) generated
+   1022, FMA (fused multiply-add) instruction(s) generated
+   1023, FMA (fused multiply-add) instruction(s) generated
+   1024, FMA (fused multiply-add) instruction(s) generated
+   1025, FMA (fused multiply-add) instruction(s) generated
+   1026, FMA (fused multiply-add) instruction(s) generated
+   1038, FMA (fused multiply-add) instruction(s) generated
+   1039, FMA (fused multiply-add) instruction(s) generated
+   1044, FMA (fused multiply-add) instruction(s) generated
+   1046, FMA (fused multiply-add) instruction(s) generated
+   1050, FMA (fused multiply-add) instruction(s) generated
+   1056, FMA (fused multiply-add) instruction(s) generated
+   1057, FMA (fused multiply-add) instruction(s) generated
+   1058, FMA (fused multiply-add) instruction(s) generated
+   1059, FMA (fused multiply-add) instruction(s) generated
+   1060, FMA (fused multiply-add) instruction(s) generated
+   1072, FMA (fused multiply-add) instruction(s) generated
+   1073, FMA (fused multiply-add) instruction(s) generated
+   1078, FMA (fused multiply-add) instruction(s) generated
+   1080, FMA (fused multiply-add) instruction(s) generated
+   1084, FMA (fused multiply-add) instruction(s) generated
+   1090, FMA (fused multiply-add) instruction(s) generated
+   1091, FMA (fused multiply-add) instruction(s) generated
+   1092, FMA (fused multiply-add) instruction(s) generated
+   1093, FMA (fused multiply-add) instruction(s) generated
+   1094, FMA (fused multiply-add) instruction(s) generated
+blts:
+   1113, Loop not fused: sibling loop may prevent vectorization
+   1115, Loop not vectorized: unknown
+   1116, FMA (fused multiply-add) instruction(s) generated
+   1124, 2 loops fused
+         Generated vector simd code for the loop
+   1125, FMA (fused multiply-add) instruction(s) generated
+   1138, FMA (fused multiply-add) instruction(s) generated
+   1139, FMA (fused multiply-add) instruction(s) generated
+   1140, FMA (fused multiply-add) instruction(s) generated
+   1141, FMA (fused multiply-add) instruction(s) generated
+   1142, FMA (fused multiply-add) instruction(s) generated
+   1145, FMA (fused multiply-add) instruction(s) generated
+   1146, FMA (fused multiply-add) instruction(s) generated
+   1147, FMA (fused multiply-add) instruction(s) generated
+   1148, FMA (fused multiply-add) instruction(s) generated
+   1149, FMA (fused multiply-add) instruction(s) generated
+   1152, FMA (fused multiply-add) instruction(s) generated
+   1153, FMA (fused multiply-add) instruction(s) generated
+   1154, FMA (fused multiply-add) instruction(s) generated
+   1155, FMA (fused multiply-add) instruction(s) generated
+   1156, FMA (fused multiply-add) instruction(s) generated
+   1159, FMA (fused multiply-add) instruction(s) generated
+   1160, FMA (fused multiply-add) instruction(s) generated
+   1161, FMA (fused multiply-add) instruction(s) generated
+   1162, FMA (fused multiply-add) instruction(s) generated
+   1163, FMA (fused multiply-add) instruction(s) generated
+   1169, FMA (fused multiply-add) instruction(s) generated
+   1170, FMA (fused multiply-add) instruction(s) generated
+   1171, FMA (fused multiply-add) instruction(s) generated
+   1172, FMA (fused multiply-add) instruction(s) generated
+   1175, FMA (fused multiply-add) instruction(s) generated
+   1176, FMA (fused multiply-add) instruction(s) generated
+   1177, FMA (fused multiply-add) instruction(s) generated
+   1178, FMA (fused multiply-add) instruction(s) generated
+   1181, FMA (fused multiply-add) instruction(s) generated
+   1182, FMA (fused multiply-add) instruction(s) generated
+   1183, FMA (fused multiply-add) instruction(s) generated
+   1184, FMA (fused multiply-add) instruction(s) generated
+   1190, FMA (fused multiply-add) instruction(s) generated
+   1191, FMA (fused multiply-add) instruction(s) generated
+   1192, FMA (fused multiply-add) instruction(s) generated
+   1195, FMA (fused multiply-add) instruction(s) generated
+   1196, FMA (fused multiply-add) instruction(s) generated
+   1197, FMA (fused multiply-add) instruction(s) generated
+   1203, FMA (fused multiply-add) instruction(s) generated
+   1204, FMA (fused multiply-add) instruction(s) generated
+   1208, FMA (fused multiply-add) instruction(s) generated
+   1211, FMA (fused multiply-add) instruction(s) generated
+   1214, FMA (fused multiply-add) instruction(s) generated
+   1217, FMA (fused multiply-add) instruction(s) generated
+buts:
+   1236, Loop interchange produces reordered loop nest: 1236,1238,1237
+         Loop not fused: enclosed in different number of nests
+   1237, Loop not fused: dependence chain to sibling loop
+         Loop not vectorized: unknown
+   1238, Outer loop unrolled 5 times (completely unrolled)
+   1239, FMA (fused multiply-add) instruction(s) generated
+   1247, Loop not fused: possible intervening definition
+         2 loops fused
+         Generated vector simd code for the loop
+   1248, FMA (fused multiply-add) instruction(s) generated
+   1261, FMA (fused multiply-add) instruction(s) generated
+   1262, FMA (fused multiply-add) instruction(s) generated
+   1263, FMA (fused multiply-add) instruction(s) generated
+   1264, FMA (fused multiply-add) instruction(s) generated
+   1265, FMA (fused multiply-add) instruction(s) generated
+   1268, FMA (fused multiply-add) instruction(s) generated
+   1269, FMA (fused multiply-add) instruction(s) generated
+   1270, FMA (fused multiply-add) instruction(s) generated
+   1271, FMA (fused multiply-add) instruction(s) generated
+   1272, FMA (fused multiply-add) instruction(s) generated
+   1275, FMA (fused multiply-add) instruction(s) generated
+   1276, FMA (fused multiply-add) instruction(s) generated
+   1277, FMA (fused multiply-add) instruction(s) generated
+   1278, FMA (fused multiply-add) instruction(s) generated
+   1279, FMA (fused multiply-add) instruction(s) generated
+   1282, FMA (fused multiply-add) instruction(s) generated
+   1283, FMA (fused multiply-add) instruction(s) generated
+   1284, FMA (fused multiply-add) instruction(s) generated
+   1285, FMA (fused multiply-add) instruction(s) generated
+   1286, FMA (fused multiply-add) instruction(s) generated
+   1292, FMA (fused multiply-add) instruction(s) generated
+   1293, FMA (fused multiply-add) instruction(s) generated
+   1294, FMA (fused multiply-add) instruction(s) generated
+   1295, FMA (fused multiply-add) instruction(s) generated
+   1298, FMA (fused multiply-add) instruction(s) generated
+   1299, FMA (fused multiply-add) instruction(s) generated
+   1300, FMA (fused multiply-add) instruction(s) generated
+   1301, FMA (fused multiply-add) instruction(s) generated
+   1304, FMA (fused multiply-add) instruction(s) generated
+   1305, FMA (fused multiply-add) instruction(s) generated
+   1306, FMA (fused multiply-add) instruction(s) generated
+   1307, FMA (fused multiply-add) instruction(s) generated
+   1313, FMA (fused multiply-add) instruction(s) generated
+   1314, FMA (fused multiply-add) instruction(s) generated
+   1315, FMA (fused multiply-add) instruction(s) generated
+   1318, FMA (fused multiply-add) instruction(s) generated
+   1319, FMA (fused multiply-add) instruction(s) generated
+   1320, FMA (fused multiply-add) instruction(s) generated
+   1326, FMA (fused multiply-add) instruction(s) generated
+   1327, FMA (fused multiply-add) instruction(s) generated
+   1331, FMA (fused multiply-add) instruction(s) generated
+   1334, FMA (fused multiply-add) instruction(s) generated
+   1337, FMA (fused multiply-add) instruction(s) generated
+   1340, FMA (fused multiply-add) instruction(s) generated
+   1343, Rerolled basic block into loop
+         Generated vector simd code for rerolled loop
+jacu:
+   1368, -O4 optimization: guarded floating point expression hoisted
+         FMA (fused multiply-add) instruction(s) generated
+   1369, Loop not vectorized: unprofitable for target
+   1381, FMA (fused multiply-add) instruction(s) generated
+   1388, FMA (fused multiply-add) instruction(s) generated
+   1395, FMA (fused multiply-add) instruction(s) generated
+   1398, FMA (fused multiply-add) instruction(s) generated
+   1403, FMA (fused multiply-add) instruction(s) generated
+   1415, FMA (fused multiply-add) instruction(s) generated
+   1416, FMA (fused multiply-add) instruction(s) generated
+   1421, FMA (fused multiply-add) instruction(s) generated
+   1423, FMA (fused multiply-add) instruction(s) generated
+   1427, FMA (fused multiply-add) instruction(s) generated
+   1433, FMA (fused multiply-add) instruction(s) generated
+   1434, FMA (fused multiply-add) instruction(s) generated
+   1435, FMA (fused multiply-add) instruction(s) generated
+   1436, FMA (fused multiply-add) instruction(s) generated
+   1437, FMA (fused multiply-add) instruction(s) generated
+   1449, FMA (fused multiply-add) instruction(s) generated
+   1450, FMA (fused multiply-add) instruction(s) generated
+   1455, FMA (fused multiply-add) instruction(s) generated
+   1457, FMA (fused multiply-add) instruction(s) generated
+   1461, FMA (fused multiply-add) instruction(s) generated
+   1467, FMA (fused multiply-add) instruction(s) generated
+   1468, FMA (fused multiply-add) instruction(s) generated
+   1469, FMA (fused multiply-add) instruction(s) generated
+   1470, FMA (fused multiply-add) instruction(s) generated
+   1471, FMA (fused multiply-add) instruction(s) generated
+   1483, FMA (fused multiply-add) instruction(s) generated
+   1489, FMA (fused multiply-add) instruction(s) generated
+   1495, FMA (fused multiply-add) instruction(s) generated
+   1498, FMA (fused multiply-add) instruction(s) generated
+   1501, FMA (fused multiply-add) instruction(s) generated
+   1502, FMA (fused multiply-add) instruction(s) generated
+   1503, FMA (fused multiply-add) instruction(s) generated
+   1504, FMA (fused multiply-add) instruction(s) generated
+   1505, FMA (fused multiply-add) instruction(s) generated
+nvdriver.f90:
+main:
+      3, subprogram not inlined -- missing prototype during crossing files: dolu
