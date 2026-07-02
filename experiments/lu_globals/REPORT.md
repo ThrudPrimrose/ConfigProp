@@ -9,6 +9,40 @@ rewritten to module variables. The mutable globals `nx0/ny0/nz0, itmax, dt, omeg
 are the namelist/config analogue (set once, read as loop bounds and coefficients);
 the `parameter`s (`isiz1=33`, …) are the control.
 
+## How the numbers were obtained
+
+Nothing here is hand-counted. Every value is a `grep -c` over IR or assembly the
+compiler emits about **its own** output; `./reproduce.sh` records each into
+`RESULTS.txt` and echoes the "money-shot" source line it came from. The method is
+always the same: ask whether the configuration global still appears as a runtime
+memory reference (`load`/`movl … (%rip)`) after the optimizer has run, or whether it
+became a literal.
+
+The global under test is the LU grid bound `nz`. Each compiler mangles it differently,
+which is all the per-compiler greps differ by:
+
+- **flang / LLVM IR**: `@_QMluEnz` (module `lu`, entity `nz`); the namelist var is `@_QMluEnz0`.
+- **nvfortran / asm**: the module block lives in a COMMON-style symbol `_lu_<n>_`, referenced rip-relative.
+- **gfortran / asm**: `__lu_MOD_nz`, referenced rip-relative.
+
+| Reported value | Exact command | Result |
+|---|---|---|
+| as-is `-O3`, `nz` still loaded | `grep -c 'load i32, ptr @_QMluEnz' ir/lu_O3.ll` | 8 |
+| gvar single-TU folded? | `grep -c 'load i32, ptr @_QMgvEn' gvar/st_<flavour>.ll` (0 ⇒ folded) | per table |
+| once-stored guard selects | `grep -c 'select i1' gvar/guard_wp.ll` | 2 |
+| inject `nz0`+LTO: `nz0` gone | `grep -c 'load i32, ptr @_QMluEnz0' ir/spec_lto_O3.ll` | 0 |
+| inject `nz0`+LTO: `nz` guarded | `grep -c 'select i1 %…, i32 16, i32 0' ir/spec_lto_O3.ll` | 4 |
+| config-prop endpoint folds | `grep -c 'load i32, ptr @_QMluEnz' ir/lu_specfull_O3.ll` | 0 |
+| nvfortran `-O4` rip loads | `grep -c '_lu_[0-9]\+_(%rip)' ir/lu_nvO4.s` | 42 |
+| flang PGO `nz` loads | `grep -c 'load i32, ptr @_QMluEnz' ir/lu_pgo_O3.ll` | 8 |
+| flang PGO branch weights | `grep -c '!prof !' ir/lu_pgo_O3.ll` | 202 |
+
+The e2e checksum is the five residual norms `rsdnm(5)` the driver prints after
+`dolu()`. `./e2e.sh` compares them byte-for-byte across build variants (FP-repro flags
+`-ffp-contract=off` for flang, `-Kieee -Mnofma` for nvfortran); the flang-vs-nvfortran
+relative difference (5.9e-16, machine epsilon) is computed in a one-line Python at the
+end of the harness.
+
 ## TL;DR
 
 | # | Regime | Config global folds to a compile-time constant? |
@@ -124,11 +158,55 @@ PGO informs branch/layout/inlining and can guard-specialize a *hot indirect call
 never turns an external-linkage memory global read from a namelist into a constant.
 This holds uniformly, so PGO is not a compiler-specific gap our approach exploits.
 
+## Can PGO *specialize* the surviving loads away?
+
+A sharper follow-up: PGO records what a load produces at runtime, so could
+*value profiling* observe "`nz` is always 16" and specialize on it? Checked directly.
+
+**Which loads survive, and how counted.** After `flang-new-21 -O3 -fprofile-use`, I
+listed every remaining config-global load with
+`grep -oE 'load i32, ptr @_QMluE[a-z0-9]+' pgo.ll | sort | uniq -c | sort -rn`.
+Twelve globals survive: `jst/jend/ist/iend` ×15 each, `nx` ×9, `nz` ×8,
+`ny/ny0/nx0` ×7, `nz0` ×4, `inorm` ×2, `itmax` ×1.
+
+**No PGO variant removes them** (each cell is the `nz`-load grep above on that build):
+
+| Mode | Commands | `nz` loads |
+|---|---|---|
+| flang standard PGO | `-fprofile-generate` → run → `llvm-profdata merge` → `-fprofile-use` | 8 |
+| flang **context-sensitive** PGO | add `-fcs-profile-generate` → rerun → merge → `-fprofile-use` | 8 |
+| GCC **value profiling** | `gfortran -fprofile-generate -fprofile-values` → run → `-fprofile-use` | 9 |
+
+**Why — three independent reasons, each checked:**
+
+1. **Value profiling never instruments these loads.**
+   `llvm-profdata show --all-functions --value-cutoff=0 lu.profdata` reports only block
+   counts and **zero value sites**. LLVM/GCC value profiling histograms indirect-call
+   targets, memop (`memcpy`/`memset`) sizes, and (GCC) `div`/`mod` operands — never an
+   integer load used as a loop bound. There is no knob that would specialize on the
+   observed value of `nz`.
+2. **PGO measures frequency, not invariance.** The only *sound* value-based transform is
+   a guarded specialization (`v = load nz; if (v==16) fast else generic`), which keeps
+   the load on the generic path. PGO never emits an unconditional constant — the same
+   reason `nvfortran -Mpfo=indirect` leaves indirect-call promotion guarded.
+3. **The global is external-linkage mutable memory that is actually written.**
+   `grep '^@_QMluEnz = ' pgo.ll` → `@_QMluEnz = global i32 0` (external), and `domain()`
+   emits `store i32 …, ptr @_QMluEnz` (the `nz = nz0` copy). So `nz` is not even
+   read-only within the TU; replacing the load requires a *proof* it is never rewritten
+   after init, which PGO does not provide.
+
+This is exactly the gap config-prop closes: the glacial may-write analysis supplies the
+invariance proof and the namelist supplies the exact value, so the bound is rewritten to
+the literal **unconditionally** — no guard, no load. That is the difference between an
+*exact* profile (the config file) and a *frequent* one (PGO).
+
 ## What it means for the paper
 
-- **Honest, verified claims** (safe to cite): (i) no `-O` level, LTO, or PGO folds
-  a config-style module global on its own — value-presence + linkage gates, both
-  demonstrated on the `gvar` microkernel and LU; (ii) LLVM's write-once analysis
+- **Honest, verified claims** (safe to cite): (i) no `-O` level, LTO, or PGO —
+  including context-sensitive PGO and value profiling — folds a config-style module
+  global on its own, because value profiling does not target loads and PGO proves
+  frequency not invariance; the value-presence + linkage gates are demonstrated on the
+  `gvar` microkernel and LU; (ii) LLVM's write-once analysis
   exists but yields a **runtime guard** when domination isn't provable; (iii) even
   namelist-constant injection + whole-program LTO leaves the *derived* loop bound
   guarded, so the trip count is not a compile-time constant; (iv) the whole
