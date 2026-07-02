@@ -1,12 +1,31 @@
 \section{Interval Arithmetic on Collections}
 \label{sec:approach}
 
-\td{FORMALISM SECTION. Develop the unifying lattice (the title object). Draft worked out; transcribe it here.}
+\Cref{sec:intro} treated every recovered configuration domain in one framework. This section makes that framework precise: a lattice of bounded sets over a parametric base, a whole-program reduced product over it, and one reduction that carries recovered values into recovered types.
 
-The analysis tracks, for each glacial variable $x$, an over-approximation of the set $\mathrm{Reach}(x)\subseteq D_x$ of values it can hold once the namelist is fixed. We abstract $\wp(D_x)$ uniformly.
+\paragraph{Abstracting one variable.}
+Fix a glacial variable $x$ with concrete domain $D_x$: the integers for a size or a mode, or the finite set $\mathcal{T}_x$ of concrete types for a polymorphic selector. Once the namelist is fixed, $x$ can hold only the values in a set $\mathrm{Reach}(x)\subseteq D_x$, and the analysis computes a sound over-approximation of it. We abstract $\wp(D_x)$ through a \emph{parametric base lattice} $B$ with concretization $\gamma_B:B\to\wp(D)$. For a numeric domain $B$ is the interval lattice $\mathsf{Int}$, with $\gamma_{\mathsf{Int}}([l,u])=\{v:l\le v\le u\}$; for a type domain $B$ is the flat lattice $\mathsf{Flat}(\mathcal{T})$ over the finite type universe. Each is standard and comes with a Galois connection $(\alpha_B,\gamma_B)$ between $\wp(D)$ and $B$.
 
-\td{Define the parametric base lattice $B$ with $\gamma_B:B\to\wp(D)$, instantiated as the interval lattice $\mathsf{Int}$ for numeric $D=\mathbb{Z}$ and the flat lattice $\mathsf{Flat}(\mathcal T)$ for the finite type universe $D=\mathcal T$.}
-\td{Define the bounded disjunctive completion $\mathcal C_k(B)=\{F\subseteq B:|F|\le k\}\cup\{\top\}$, $\gamma(F)=\bigcup_{b\in F}\gamma_B(b)$. "Set of intervals" $= \mathcal C_k(\mathsf{Int})$; "set of types" $=\mathcal C_k(\mathsf{Flat}(\mathcal T))$. Give $\sqcup$ (union + rebound/widen), $\bot=\varnothing$, $\top=D$ (the I/O barrier).}
-\td{Whole-program state $=$ reduced product $\prod^\sharp_x \mathcal C_{k_x}(B_x)$ \cite{reducedproduct}. Define the VALUE$\to$TYPE reduction $\rho$: given the program's discriminator $\delta_x:\mathbb Z\to\mathcal T_x$ (the \texttt{select type}/factory), $\rho$ refines $x$'s type-set to $\{\delta_x(v):v\in S\}$ from the tag's value-set $S$ --- a singleton tag yields full devirtualization. This is the formal content of C2.}
-\td{Define residualization $\mathcal R$ mapping the fixpoint to specializations: the four optimizations are the four cases keyed by representation (singleton/finite-set/ interval/type-set) $\times$ use (value/index-bound/dispatch-tag). Cross-product for finite sets; bound-propagation (no enumeration) for intervals.}
-\td{Soundness: Galois connection per $B$; disjunctive completion and reduced product preserve it; monotone transfer $\Rightarrow$ fixpoint over-approximates $\mathrm{Reach}$. Residual guards partition the config space $\Rightarrow$ exact, unguarded hot path. Address position vs.\ MEMORY~\cite{memory_cgo24} and frame honestly as an instance of reduced product (pre-empt the "just reduced product" rebuttal).}
+\paragraph{Sets of intervals, sets of types.}
+A single interval or type is too coarse for a configuration that admits a handful of modes, so we lift $B$ by its \emph{bounded disjunctive completion}: for a cutoff $k$,
+\[
+  \mathcal{C}_k(B)=\{\,F\subseteq B : |F|\le k\,\}\cup\{\top\},
+  \qquad
+  \gamma(F)=\bigcup_{b\in F}\gamma_B(b).
+\]
+An element is a set of at most $k$ base elements, and $\gamma$ unions their concretizations. Instantiating $B$ gives the two objects the title names: $\mathcal{C}_k(\mathsf{Int})$ is a \emph{set of intervals} and $\mathcal{C}_k(\mathsf{Flat}(\mathcal{T}))$ a \emph{set of types}. The order is $F_1\sqsubseteq F_2$ when every $b\in F_1$ is subsumed by some $b'\in F_2$; the join $F_1\sqcup F_2$ unions the two and, when that would exceed $k$ elements, merges the closest pair (for intervals, widening to their hull), so the height is bounded and the fixpoint terminates. The bottom $\bot=\emptyset$ is the unreached value; the top $\top=D$ is the I/O barrier itself, where the analysis knows nothing because the value has not been recovered yet.
+
+\paragraph{Whole program, and the value-to-type reduction.}
+The state over all variables is the reduced product $\prod^\sharp_x \mathcal{C}_{k_x}(B_x)$~\cite{reducedproduct}, which lets an inference about one variable sharpen another. The reduction that matters carries values to types. A polymorphic site is guarded by a \emph{discriminator} $\delta_x:\mathbb{Z}\to\mathcal{T}_x$, the \lstinline[style=fortran]|SELECT TYPE| or allocation factory that maps an integer configuration tag to the concrete type it constructs. Given a value-set $S$ recovered for the tag, the reduction
+\[
+  \rho:\ S\ \longmapsto\ \{\,\delta_x(v) : v\in S\,\}\ \in\ \mathcal{C}_{k}\!\left(\mathsf{Flat}(\mathcal{T}_x)\right)
+\]
+refines $x$'s type-set to the images of $S$ under the discriminator; a singleton tag yields a singleton type-set, that is, full devirtualization. This reduction is the formal content of our centerpiece (\Cref{sec:spec}): it is what moves a recovered \emph{value} into the \emph{type} domain where dispatch lives.
+
+\paragraph{Residualization.}
+A specialization is read off the fixpoint by cases, keyed by the representation of a variable's domain and by how the program uses it. A \emph{singleton} $\{[v,v]\}$ becomes a source constant. A \emph{finite value-set} of size $m>1$ becomes $m$ specialized variants over its elements, taken as a cross-product across several such variables (\Cref{sec:variants}). An \emph{integer interval} $[l,u]$ used to address an array becomes a narrowed index type, the smallest integer that spans $[l,u]$, propagated as a bound with no enumeration. A \emph{type-set} used at a dispatch becomes an \lstinline[style=fortran]|if|-chain over its members that configuration constants then prune. The four optimizations of \Cref{sec:spec} are exactly these four cases; one recovery and one fixpoint feed them all.
+
+\paragraph{Soundness and honest positioning.}
+Each base lattice has a Galois connection, the bounded disjunctive completion and the reduced product both preserve one, and every transfer function is monotone, so the fixpoint over-approximates $\mathrm{Reach}$: no reachable value is dropped, and no specialization is unsound for the recovered configuration. That the recovered set is itself correct, i.e.\ that $x$ is glacial, is the separate recovery obligation of \Cref{sec:recovery}. Because each residual variant is valid on a region of the configuration space and the regions partition it, the deployed binary needs no per-use guard, only one check at startup (\Cref{sec:variants}). We do not claim the product construction as new: it is an instance of the reduced product of Cousot and Cousot~\cite{reducedproduct}. What is specific here is pairing a config-supplied bound (\Cref{sec:recovery}) with the value-to-type reduction $\rho$, driving devirtualization from a recovered value domain, which we are not aware of in prior specialization work; the closest analysis over collections, MEMORY~\cite{memory_cgo24}, targets aggregate liveness and is written by hand.
+
+\td{TODO: instantiate $\rho$ on a real selector (QE \texttt{vexx} solver choice / ICON solver namelist) as a worked example; tie each $k_x$ to the measured cardinality of that variable across operational namelists (\Cref{sec:eval}).}
