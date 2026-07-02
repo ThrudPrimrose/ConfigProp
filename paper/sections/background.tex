@@ -10,19 +10,19 @@ To test whole-program optimization precisely we take NAS~LU as a single translat
 
 \begin{table}[t]
   \centering
-  \caption{Turning a configuration-style module bound (\texttt{nz}) into a compile-time constant in NAS~LU. Only rewriting the bound to a source constant (the last row) yields a literal; injecting the namelist variable and running LTO leaves the \emph{derived} bound guarded. SCCP never participates: it is an SSA-value pass and globals are memory.}
+  \caption{Making the LU grid bound \texttt{nz} a compile-time constant, measured on flang-new-21 / LLVM~21 (\texttt{experiments/lu\_globals}). When the value arrives at runtime through the namelist read, no level folds it, whole-program LTO included. Injecting the namelist variable as a source constant folds \texttt{nz0} but leaves the \emph{derived} bound \texttt{nz}\,$=$\,\texttt{nz0} non-constant; only rewriting the bound itself yields a literal. SCCP never participates: it is an SSA-value pass and globals are memory.}
   \label{tab:lu}
   \small
   \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}p{5.4cm}l@{}}
+  \begin{tabular}{@{}p{5.7cm}l@{}}
     \toprule
-    How \texttt{nz} is known & Loop bound \\
+    How \texttt{nz} is supplied & Loop bound \texttt{nz} \\
     \midrule
-    as-is, \texttt{-O3} (value absent)                 & runtime load \\
-    as-is, whole-program LTO                            & runtime load \\
-    namelist var \texttt{nz0} as const, \texttt{-O3}    & runtime load \\
-    namelist var \texttt{nz0} as const, LTO             & guarded \texttt{select} \\
-    bound rewritten to a source constant                & literal (folds) \\
+    runtime (namelist read), \texttt{-O3}               & runtime load \\
+    runtime (namelist read), whole-program LTO          & runtime load \\
+    namelist var \texttt{nz0} as source constant, \texttt{-O3} & runtime load \\
+    namelist var \texttt{nz0} as source constant, LTO   & non-constant (\texttt{nz} guarded) \\
+    loop bound rewritten to a source constant           & literal (folds) \\
     \bottomrule
   \end{tabular}
 \end{table}
