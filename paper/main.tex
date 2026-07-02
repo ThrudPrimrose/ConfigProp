@@ -12,18 +12,16 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{cleveref}
-\usepackage[inline]{enumitem}   % inline enumerate* lists
+\usepackage[inline]{enumitem}
+\usepackage{xcolor}
+
+\usepackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
+\long\def\td#1{\todo[inline,color=yellow!35,size=\footnotesize]{\textbf{TODO:} #1}}
+
 
 % Absorb minor over/underfull boxes from unbreakable mono tokens (flags, paths).
 \emergencystretch=3em
 \hfuzz=2pt
-
-% TODO marker. RENDERED as inline yellow boxes while drafting.
-% For a clean/submission build, comment the two todonotes lines and
-% uncomment \long\def\td#1{} to make \td an invisible no-op again.
-% \long\def\td#1{}
-\usepackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
-\long\def\td#1{\todo[inline,color=yellow!35,size=\footnotesize]{\textbf{TODO:} #1}}
 
 % --- Fortran listing style used for the motivating examples -------------------
 \definecolor{cfgkw}{rgb}{0.10,0.10,0.55}
