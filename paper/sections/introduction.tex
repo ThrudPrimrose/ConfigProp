@@ -1,16 +1,85 @@
 \section{Introduction}
 \label{sec:intro}
 
-\Cref{lst:motivating} shows a loop nest from the dynamical core of the ICON
-climate model~\cite{icon}, lightly distilled. Three kernels---\texttt{A},
-\texttt{B}, and \texttt{C}---sweep the same column of edge values, reusing the
-horizontal and tangential velocities \texttt{vn} and \texttt{vt}. A production
-compiler keeps them as three separate loop nests: it cannot fuse \texttt{A} with
-\texttt{C} across the opaque \lstinline[style=fortran]|IF (.NOT. lvn_only)| guard,
-and it cannot drop the \lstinline[style=fortran]|IF (istep == 1)| test, because
-both \texttt{lvn\_only} and \texttt{istep} are read from the model's configuration
-file---its \emph{namelist}---at runtime. So on a memory-bandwidth-bound code, the
-velocities are streamed from memory three times where once would do.
+Production scientific codes are launched, not merely run. Before it integrates a
+single timestep, the ICON climate model~\cite{icon}, the ecRad radiation
+scheme~\cite{ecrad2024}, or a Quantum ESPRESSO calculation reads a configuration
+file---a Fortran \emph{namelist}---once, at startup, depositing a few hundred
+values into module-level state that then never changes for the rest of a run that
+lasts hours or days. These values select solvers, toggle physics, and fix grid and
+spectral dimensions; having been written exactly once at initialization and read
+throughout the compute phase, they are \emph{glacial}~\cite{glacial}. They are also
+constants of the deployment in every sense but one: the compiler cannot see them.
+The value lives in a data file the compiler never reads and, once loaded, in
+externally-linked module state, so it remains a runtime value at every optimization
+level. The result is a \emph{configuration tax}: branches, dead code, and fusion and
+vectorization inhibitors that survive every optimization level even though every one
+of them is decided the moment the model is launched.
+
+We remove this tax by recovering the config-fixed values statically, narrowing each
+to its domain, and specializing the code to the deployment. The reframing that makes
+this practical is that no profiling is needed: profile-guided optimization
+instruments a run to learn which values are stable in practice, but for
+configuration variables \emph{the configuration file already is the profile}, and an
+exact one. This puts specialization at a point in the compilation lifecycle distinct
+from the usual two. Ahead-of-time compilation does not know the deployment values;
+just-in-time compilation knows them but pays a runtime cost on every execution. We
+perform \emph{deployment-time specialization}: a config-file-driven ahead-of-time
+specialization with startup binary selection, which parses the namelist, traces each
+variable across the I/O barrier to the glacial module state it initializes, recovers
+its domain, and injects it---paying no runtime cost in the timestep loop at all.
+
+\paragraph{Why the compiler cannot reach it.}
+One might expect aggressive optimization to recover these constants. It cannot, for
+two structural reasons rather than a missing pass, which we make precise in
+\Cref{sec:background} on a NAS~LU kernel whose grid bounds are module variables (as
+in any code built from \texttt{COMMON} blocks or configuration modules). First, the
+value is \emph{not in the program at all}: it enters through an \emph{I/O barrier}, a
+namelist read that lowers to opaque runtime calls past which constant propagation
+must assume anything. Second, it is \emph{module-level state}---external by linkage,
+reached across hundreds of translation units through
+\lstinline[style=fortran]|USE ... ONLY|---so a single translation unit cannot even
+assume it is unwritten. Production configuration state fails on both counts, so the
+as-is config global stays a runtime value at every optimization level, including
+whole-program LTO (\Cref{tab:lu}). For the scalar case, recovery is precisely the
+missing input: once the value is supplied \emph{as a source-level constant}, the
+standard cascade---constant propagation, dead-code elimination, fusion---does the
+rest. The contribution there is not the cascade but the bridge, recovering statically
+and soundly a value the compiler structurally cannot obtain.
+
+\td{DEEP ARG B (PLAN.md 2.B) --- the config file is an EXACT, GUARD-FREE profile.
+Value-knowledge spectrum: source-const(parse) | other-TU(LTO) | config/glacial
+(deployment, EXACT) | PGO(post-run, probabilistic, NEEDS GUARD) | runtime. RIFS must
+guard because values are merely frequent; we never guard because the namelist is
+authoritative. Chain: exact $\Rightarrow$ no per-call guard $\Rightarrow$ unguarded
+whole-program specialization $\Rightarrow$ covering set is the natural deployment unit
+(ties C1/C2/C3). Rename the hook to "exact, guard-free profile".}
+\td{DEEP ARG C (PLAN.md 2.C) --- automatic staging (dissolves "just partial
+evaluation"). A configured code is a TWO-STAGE program; PE/SFAC need a hand-supplied
+binding-time annotation, we DISCOVER the boundary automatically and EXECUTE stage 1 at
+deployment-compile-time. CAVEAT (skeptical review): the boundary is NOT the textual
+READ (glacial fixpoint reached later via config derivation / MPI broadcast / restart
+override) --- define it as the last point dominating timestep-loop entries with empty
+compute-phase may-write set (detail in \Cref{sec:recovery}). Elevates Autrey--Wolfe +
+extends to types.}
+
+\paragraph{A concrete tax.}
+\Cref{lst:motivating} shows what the tax looks like in code: a loop nest from ICON's
+dynamical core, lightly distilled. Three kernels---\texttt{A}, \texttt{B}, and
+\texttt{C}---sweep the same column of edge values, reusing the horizontal and
+tangential velocities \texttt{vn} and \texttt{vt}. A production compiler keeps them
+as three separate loop nests: it cannot fuse \texttt{A} with \texttt{C} across the
+opaque \lstinline[style=fortran]|IF (.NOT. lvn_only)| guard, and it cannot drop the
+\lstinline[style=fortran]|IF (istep == 1)| test, because both \texttt{lvn\_only} and
+\texttt{istep} are read once from the namelist at startup and never change. So on a
+memory-bandwidth-bound code, the velocities are streamed from memory three times
+where once would do. The moment the values are known the barriers dissolve: with
+\texttt{istep}\,$=$\,2 the block is dead; with \texttt{istep}\,$=$\,1 and
+\texttt{lvn\_only}\,$=$\,\texttt{.true.}, kernel \texttt{B} vanishes and \texttt{A}
+and \texttt{C} fuse into one column sweep; with
+\texttt{lvn\_only}\,$=$\,\texttt{.false.}, \texttt{B} becomes unconditional and all
+three fuse. The information that unlocks every one of these optimizations is sitting,
+in plain text, in a file on disk.
 
 \begin{lstlisting}[style=fortran,float=t,caption={A configuration-dependent fusion
 barrier in ICON's \texttt{velocity\_tendencies} (distilled). \texttt{istep} and
@@ -33,63 +102,6 @@ IF (istep == 1) THEN
 END IF
 \end{lstlisting}
 
-These values are constants of the run. A weather center launches this code with a
-fixed namelist and integrates for hours or days without ever changing
-\texttt{lvn\_only} or \texttt{istep}. The moment they are known the barriers
-dissolve: with \texttt{istep}\,$=$\,2 the block is dead; with
-\texttt{istep}\,$=$\,1 and \texttt{lvn\_only}\,$=$\,\texttt{.true.}, kernel
-\texttt{B} vanishes and \texttt{A} and \texttt{C} fuse into one column sweep; with
-\texttt{lvn\_only}\,$=$\,\texttt{.false.}, \texttt{B} becomes unconditional and all
-three fuse. The information that unlocks every one of these optimizations is
-sitting, in plain text, in a file on disk.
-
-\paragraph{Why the compiler cannot reach it.}
-One might expect aggressive optimization to recover this. It cannot, for two
-structural reasons rather than a missing pass, which we make precise in
-\Cref{sec:background} on a NAS~LU kernel whose grid bounds are module variables (as in
-any code built from \texttt{COMMON} blocks or configuration modules). First, the value
-is \emph{not in the program at all}: it enters through an \emph{I/O barrier}, a
-namelist read that lowers to opaque runtime calls past which constant propagation must
-assume anything. Second, it is \emph{module-level state}---external by linkage, reached
-across hundreds of translation units through
-\lstinline[style=fortran]|USE ... ONLY|---so a single translation unit cannot even
-assume it is unwritten. Production configuration state fails on both counts, so it
-stays a runtime value at every optimization level, including whole-program LTO
-(\Cref{tab:lu}). The cost is a \emph{configuration tax}: branches, dead code, and
-fusion and vectorization inhibitors that survive every optimization level.
-
-\paragraph{The configuration file is the profile.}
-Profile-guided optimization specializes for values that are stable in practice by
-instrumenting a run. We observe that for configuration variables no profiling is
-needed: \emph{the configuration file already is the profile}, and an exact one.
-This reframes specialization around a third point in the compilation lifecycle.
-Ahead-of-time compilation does not know the deployment values; just-in-time
-compilation knows them but pays a runtime cost on every execution;
-\emph{deployment-time specialization} knows the values---from the config file---and
-pays no runtime cost at all. We parse the namelist, trace each configuration
-variable across the I/O barrier to the glacial module state it initializes, recover
-its domain, and inject it. For the scalar case this is precisely the missing input:
-once the value is supplied \emph{as a source-level constant}, the standard cascade
-does the rest (the regime \Cref{tab:lu} probes). The contribution there is not the
-cascade but the bridge---recovering, statically and soundly, a value that lives in a
-data file the compiler never reads.
-
-\td{DEEP ARG B (PLAN.md 2.B) --- the config file is an EXACT, GUARD-FREE profile.
-Value-knowledge spectrum: source-const(parse) | other-TU(LTO) | config/glacial
-(deployment, EXACT) | PGO(post-run, probabilistic, NEEDS GUARD) | runtime. RIFS must
-guard because values are merely frequent; we never guard because the namelist is
-authoritative. Chain: exact $\Rightarrow$ no per-call guard $\Rightarrow$ unguarded
-whole-program specialization $\Rightarrow$ covering set is the natural deployment unit
-(ties C1/C2/C3). Rename the hook to "exact, guard-free profile".}
-\td{DEEP ARG C (PLAN.md 2.C) --- automatic staging (dissolves "just partial
-evaluation"). A configured code is a TWO-STAGE program; PE/SFAC need a hand-supplied
-binding-time annotation, we DISCOVER the boundary automatically and EXECUTE stage 1 at
-deployment-compile-time. CAVEAT (skeptical review): the boundary is NOT the textual
-READ (glacial fixpoint reached later via config derivation / MPI broadcast / restart
-override) --- define it as the last point dominating timestep-loop entries with empty
-compute-phase may-write set (detail in \Cref{sec:recovery}). Elevates Autrey--Wolfe +
-extends to types.}
-
 \paragraph{Beyond scalars: interval arithmetic on collections.}
 A recovered value, however, is rarely just a scalar, and the cases a standard
 pipeline cannot finish even with the value in hand are the ones that matter most.
@@ -104,22 +116,22 @@ solvers has a finite type-set; lifting the recovered value to that type-set repl
 the v-table with an \lstinline[style=fortran]|if|-chain that configuration constants
 prune to the single deployed solver. Neither index narrowing nor devirtualization
 follows from injecting a scalar and re-running the optimizer; indeed the default
-Fortran pipeline does not devirtualize from a known dynamic type at all
-(\Cref{sec:spec}). To our knowledge no prior specializer derives a \emph{type}-set
-from a recovered configuration \emph{value} to drive devirtualization
-(\Cref{sec:related}).
+Fortran pipeline (flang, nvfortran) does not devirtualize from a known dynamic type
+at all (\Cref{sec:spec}). To our knowledge this is the first analysis to drive
+devirtualization from a configuration-recovered value domain (\Cref{sec:related}).
 
 \paragraph{Why this matters.}
 Recovering these gains by hand is a recognized, expensive craft. ECMWF's recent
-twelvefold acceleration of the ecRad radiation scheme~\cite{ecrad2024} reports a
-separable threefold ``code optimization'' factor; hard-coding the spectral g-point
-count into build flags so that loop bounds become constant---manual configuration
-propagation---is one of the hand optimizations that contribute to it. Such work
-costs hundreds of person-hours, must be redone per configuration, and is fragile: a
-mismatched setting silently corrupts or crashes the model. Deployment-time
-specialization automates it, and because it knows the dimensions at compile time it
-also lets the GPU backend emit tighter kernels---constant launch bounds, unrolled
-loops, narrowed index types---that a runtime-valued parameter forecloses.
+twelvefold acceleration of the ecRad radiation scheme~\cite{ecrad2024} decomposes
+into a spectral factor and a separable, roughly threefold ``code optimization''
+factor; hard-coding the spectral g-point count into build flags so that loop bounds
+become constant---manual configuration propagation---is one of the hand optimizations
+that contribute to that code-optimization factor. Such work costs hundreds of
+person-hours, must be redone per configuration, and is fragile: a mismatched setting
+silently corrupts or crashes the model. Deployment-time specialization automates it,
+and because it knows the dimensions at compile time it also lets the GPU backend emit
+tighter kernels---constant launch bounds, unrolled loops, narrowed index types---that
+a runtime-valued parameter forecloses.
 
 \td{DEEP ARG E (PLAN.md 2.E) --- systems value: production codes are generic for
 MAINTAINABILITY/DISTRIBUTION, not because any single deployment needs generality
