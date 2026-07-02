@@ -1,33 +1,12 @@
 \section{Interval Arithmetic on Collections}
 \label{sec:approach}
 
-\td{FORMALISM SECTION. Develop the unifying lattice (the title object). Draft worked
-out; transcribe it here.}
+\td{FORMALISM SECTION. Develop the unifying lattice (the title object). Draft worked out; transcribe it here.}
 
-The analysis tracks, for each glacial variable $x$, an over-approximation of the set
-$\mathrm{Reach}(x)\subseteq D_x$ of values it can hold once the namelist is fixed. We
-abstract $\wp(D_x)$ uniformly.
+The analysis tracks, for each glacial variable $x$, an over-approximation of the set $\mathrm{Reach}(x)\subseteq D_x$ of values it can hold once the namelist is fixed. We abstract $\wp(D_x)$ uniformly.
 
-\td{Define the parametric base lattice $B$ with $\gamma_B:B\to\wp(D)$, instantiated as
-the interval lattice $\mathsf{Int}$ for numeric $D=\mathbb{Z}$ and the flat lattice
-$\mathsf{Flat}(\mathcal T)$ for the finite type universe $D=\mathcal T$.}
-\td{Define the bounded disjunctive completion $\mathcal C_k(B)=\{F\subseteq B:|F|\le
-k\}\cup\{\top\}$, $\gamma(F)=\bigcup_{b\in F}\gamma_B(b)$. "Set of intervals" $=
-\mathcal C_k(\mathsf{Int})$; "set of types" $=\mathcal C_k(\mathsf{Flat}(\mathcal
-T))$. Give $\sqcup$ (union + rebound/widen), $\bot=\varnothing$, $\top=D$ (the I/O
-barrier).}
-\td{Whole-program state $=$ reduced product $\prod^\sharp_x \mathcal C_{k_x}(B_x)$
-\cite{reducedproduct}. Define the VALUE$\to$TYPE reduction $\rho$: given the program's
-discriminator $\delta_x:\mathbb Z\to\mathcal T_x$ (the \texttt{select type}/factory),
-$\rho$ refines $x$'s type-set to $\{\delta_x(v):v\in S\}$ from the tag's value-set $S$
---- a singleton tag yields full devirtualization. This is the formal content of C2.}
-\td{Define residualization $\mathcal R$ mapping the fixpoint to specializations: the
-four optimizations are the four cases keyed by representation (singleton/finite-set/
-interval/type-set) $\times$ use (value/index-bound/dispatch-tag). Cross-product for
-finite sets; bound-propagation (no enumeration) for intervals.}
-\td{Soundness: Galois connection per $B$; disjunctive completion and reduced product
-preserve it; monotone transfer $\Rightarrow$ fixpoint over-approximates
-$\mathrm{Reach}$. Residual guards partition the config space $\Rightarrow$ exact,
-unguarded hot path. Address position vs.\ MEMORY~\cite{memory_cgo24} and frame
-honestly as an instance of reduced product (pre-empt the "just reduced product"
-rebuttal).}
+\td{Define the parametric base lattice $B$ with $\gamma_B:B\to\wp(D)$, instantiated as the interval lattice $\mathsf{Int}$ for numeric $D=\mathbb{Z}$ and the flat lattice $\mathsf{Flat}(\mathcal T)$ for the finite type universe $D=\mathcal T$.}
+\td{Define the bounded disjunctive completion $\mathcal C_k(B)=\{F\subseteq B:|F|\le k\}\cup\{\top\}$, $\gamma(F)=\bigcup_{b\in F}\gamma_B(b)$. "Set of intervals" $= \mathcal C_k(\mathsf{Int})$; "set of types" $=\mathcal C_k(\mathsf{Flat}(\mathcal T))$. Give $\sqcup$ (union + rebound/widen), $\bot=\varnothing$, $\top=D$ (the I/O barrier).}
+\td{Whole-program state $=$ reduced product $\prod^\sharp_x \mathcal C_{k_x}(B_x)$ \cite{reducedproduct}. Define the VALUE$\to$TYPE reduction $\rho$: given the program's discriminator $\delta_x:\mathbb Z\to\mathcal T_x$ (the \texttt{select type}/factory), $\rho$ refines $x$'s type-set to $\{\delta_x(v):v\in S\}$ from the tag's value-set $S$ --- a singleton tag yields full devirtualization. This is the formal content of C2.}
+\td{Define residualization $\mathcal R$ mapping the fixpoint to specializations: the four optimizations are the four cases keyed by representation (singleton/finite-set/ interval/type-set) $\times$ use (value/index-bound/dispatch-tag). Cross-product for finite sets; bound-propagation (no enumeration) for intervals.}
+\td{Soundness: Galois connection per $B$; disjunctive completion and reduced product preserve it; monotone transfer $\Rightarrow$ fixpoint over-approximates $\mathrm{Reach}$. Residual guards partition the config space $\Rightarrow$ exact, unguarded hot path. Address position vs.\ MEMORY~\cite{memory_cgo24} and frame honestly as an instance of reduced product (pre-empt the "just reduced product" rebuttal).}

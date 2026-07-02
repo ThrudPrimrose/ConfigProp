@@ -1,39 +1,10 @@
 \section{Glacial Recovery across the I/O Barrier}
 \label{sec:recovery}
 
-\td{C1. The bridge: statically recover the namelist value and certify the variable
-glacial. This section must carry the SOUNDNESS argument (the PC's first-class
-concern) --- it is also what gives C1 technical content beyond LMCAS's neck-split.}
+\td{C1. The bridge: statically recover the namelist value and certify the variable glacial. This section must carry the SOUNDNESS argument (the PC's first-class concern) --- it is also what gives C1 technical content beyond LMCAS's neck-split.}
 
-\td{Namelist parse: map each \texttt{READ(NML=...)} target to the module-level
-derived-type field it initializes; recover the value (or the small covering set of
-values) from the deployment config file(s).}
-\td{Glacial certification (soundness condition): a variable is recoverable only if a
-sound may-write analysis proves NO store to its storage is reachable in the compute
-phase. The channel set must be COMPLETE (skeptical review flagged omissions): COMMON/
-EQUIVALENCE aliasing, pointer association, INTENT(IN) holes, conditional/secondary
-namelist reads, AND MPI/one-sided-RMA receive buffers aliasing config storage,
-C-interop via c\_loc/c\_f\_pointer, and writes through procedure pointers / runtime-
-resolved generic interfaces. When unprovable: REFUSE (fall back to generic). State the
-theorem. QUESTION: the whole-program may-write callgraph is itself incomplete because of
-the indirect dispatch C2 leaves opaque until devirtualized --- resolve this circularity
-(fix a conservative over-approx of indirect targets, or stage C2 before recovery).}
-\td{Contrast with LMCAS~\cite{lmcas} (neck-split on C CLI args, one binary, no types)
-and SFAC~\cite{sfac} (manual inputs, single program): our delta is persisted
-module-level state recovered across the I/O barrier in multi-TU production Fortran,
-plus the glacial-proof analysis above.}
-\td{Implementation note: built on the DaCe Fortran frontend; could integrate as a
-FIR/HLFIR-level pass in Flang (see \Cref{sec:impl}).}
-\td{DEEP ARG C detail (PLAN.md 2.C) --- frame recovery as AUTOMATIC STAGING: the
-configured code is a two-stage program (init consumes $F$ and writes glacial state;
-the timestep loop reads it). CORRECTION (skeptical review): the staging boundary is NOT
-the textual \texttt{READ} --- the glacial fixpoint is reached later (config derivation,
-MPI broadcast/scatter to ranks, domain decomposition, resolution-dependent
-re-defaulting, restart/checkpoint override). DEFINE the boundary per-variable as the
-last program point dominating all timestep-loop entries such that the compute-phase
-may-write set is empty; prove well-defined (or admit per-variable boundaries). Our
-glacial analysis is an automatic binding-time analysis that locates THAT point; recovery
-executes stage 1 up to it and residualizes stage 2. Delta over classical PE
-(hand-supplied binding times) and Autrey--Wolfe (descriptive staging). The transitive/
-derived-glacial fixpoint ($\mathit{nx}=\mathit{nx0}$ glacial because $\mathit{nx0}$ is)
-belongs here.}
+\td{Namelist parse: map each \texttt{READ(NML=...)} target to the module-level derived-type field it initializes; recover the value (or the small covering set of values) from the deployment config file(s).}
+\td{Glacial certification (soundness condition): a variable is recoverable only if a sound may-write analysis proves NO store to its storage is reachable in the compute phase. The channel set must be COMPLETE (skeptical review flagged omissions): COMMON/ EQUIVALENCE aliasing, pointer association, INTENT(IN) holes, conditional/secondary namelist reads, AND MPI/one-sided-RMA receive buffers aliasing config storage, C-interop via c\_loc/c\_f\_pointer, and writes through procedure pointers / runtime- resolved generic interfaces. When unprovable: REFUSE (fall back to generic). State the theorem. QUESTION: the whole-program may-write callgraph is itself incomplete because of the indirect dispatch C2 leaves opaque until devirtualized --- resolve this circularity (fix a conservative over-approx of indirect targets, or stage C2 before recovery).}
+\td{Contrast with LMCAS~\cite{lmcas} (neck-split on C CLI args, one binary, no types) and SFAC~\cite{sfac} (manual inputs, single program): our delta is persisted module-level state recovered across the I/O barrier in multi-TU production Fortran, plus the glacial-proof analysis above.}
+\td{Implementation note: built on the DaCe Fortran frontend; could integrate as a FIR/HLFIR-level pass in Flang (see \Cref{sec:impl}).}
+\td{DEEP ARG C detail (PLAN.md 2.C) --- frame recovery as AUTOMATIC STAGING: the configured code is a two-stage program (init consumes $F$ and writes glacial state; the timestep loop reads it). CORRECTION (skeptical review): the staging boundary is NOT the textual \texttt{READ} --- the glacial fixpoint is reached later (config derivation, MPI broadcast/scatter to ranks, domain decomposition, resolution-dependent re-defaulting, restart/checkpoint override). DEFINE the boundary per-variable as the last program point dominating all timestep-loop entries such that the compute-phase may-write set is empty; prove well-defined (or admit per-variable boundaries). Our glacial analysis is an automatic binding-time analysis that locates THAT point; recovery executes stage 1 up to it and residualizes stage 2. Delta over classical PE (hand-supplied binding times) and Autrey--Wolfe (descriptive staging). The transitive/ derived-glacial fixpoint ($\mathit{nx}=\mathit{nx0}$ glacial because $\mathit{nx0}$ is) belongs here.}

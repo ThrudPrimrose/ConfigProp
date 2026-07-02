@@ -13,6 +13,10 @@
 \usepackage{xcolor}
 \usepackage{cleveref}
 
+% Absorb minor over/underfull boxes from unbreakable mono tokens (flags, paths).
+\emergencystretch=3em
+\hfuzz=2pt
+
 % TODO marker: preserved in source, NOT rendered (acts as a comment).
 % Flip to the rendered form below while drafting if you want the boxes back.
 \long\def\td#1{}

@@ -1,102 +1,25 @@
 \section{Related Work}
 \label{sec:related}
 
-Configuration-guided optimization sits at the intersection of partial
-evaluation, function specialization, devirtualization, and configurable-systems
-research. No prior system occupies that intersection; we organize the comparison
-by the capability each line is missing.
+Configuration-guided optimization sits at the intersection of partial evaluation, function specialization, devirtualization, and configurable-systems research. No prior system occupies that intersection; we organize the comparison by the capability each line is missing.
 
 \paragraph{Partial evaluation of scientific code.}
-Specializing numerical programs on known parameters is a classical idea. Berlin
-and Weise partially evaluate numerical libraries on known sizes, coefficients,
-and boundary conditions, reporting seven- to ninety-one-fold
-speedups~\cite{berlinweise}, and a line of offline Fortran partial evaluators
-followed~\cite{kleinrubatscher}. Closest to our setting, Blazy's SFAC
-specializes Fortran~90 by interprocedural constant propagation and
-\texttt{IF}-simplification~\cite{sfac}---superficially our pipeline. But SFAC's
-stated aim is \emph{program comprehension during maintenance}, not performance;
-it performs value-level constant propagation only, with no devirtualization and
-no notion of types; it emits a \emph{single} simplified program rather than a
-deployable family; and it takes its known values from a hand-written constraint
-language, not from a configuration file. None of this lineage reads a real config
-file, recovers module-level state, or produces multiple binaries.
+Specializing numerical programs on known parameters is a classical idea. Berlin and Weise partially evaluate numerical libraries on known sizes, coefficients, and boundary conditions, reporting seven- to ninety-one-fold speedups~\cite{berlinweise}, and a line of offline Fortran partial evaluators followed~\cite{kleinrubatscher}. Closest to our setting, Blazy's SFAC specializes Fortran~90 by interprocedural constant propagation and \texttt{IF}-simplification~\cite{sfac}---superficially our pipeline. But SFAC's stated aim is \emph{program comprehension during maintenance}, not performance; it performs value-level constant propagation only, with no devirtualization and no notion of types; it emits a \emph{single} simplified program rather than a deployable family; and it takes its known values from a hand-written constraint language, not from a configuration file. None of this lineage reads a real config file, recovers module-level state, or produces multiple binaries.
 
 \paragraph{Value and argument specialization.}
-Value profiling identifies near-invariant runtime values for
-specialization~\cite{calder_valueprofiling}, and recent work makes this a
-practical compiler pass: RIFS clones functions on their most-frequent integer or
-floating-point \emph{arguments}, guarded by a runtime check and selected by a
-predictive cost model applied before code generation~\cite{rifs}; LLVM's
-interprocedural function specialization handles only statically provable constants. Both are confined to
-\emph{procedure arguments}---precisely where namelist configuration does
-\emph{not} live, since it is read into module state and reached through
-\texttt{USE}, never passed. Both also emit one guarded binary, paying a branch on
-every call, whereas we recover module-level glacial state and deploy a set of
-\emph{unguarded} whole-program variants.
+Value profiling identifies near-invariant runtime values for specialization~\cite{calder_valueprofiling}, and recent work makes this a practical compiler pass: RIFS clones functions on their most-frequent integer or floating-point \emph{arguments}, guarded by a runtime check and selected by a predictive cost model applied before code generation~\cite{rifs}; LLVM's interprocedural function specialization handles only statically provable constants. Both are confined to \emph{procedure arguments}---precisely where namelist configuration does \emph{not} live, since it is read into module state and reached through \texttt{USE}, never passed. Both also emit one guarded binary, paying a branch on every call, whereas we recover module-level glacial state and deploy a set of \emph{unguarded} whole-program variants.
 
 \paragraph{Glacial variables and neck-based specialization.}
-The pattern we exploit was named by Autrey and Wolfe, whose staging analysis first
-identified \emph{glacial} variables---set once, read throughout---by relative
-modification and reference frequency~\cite{glacial}; we adopt their term but
-recover values statically from the configuration file rather than classifying by
-frequency. The mechanism closest to ours is LMCAS, which splits a program at a
-``neck'' between configuration parsing and main logic, partially interprets up to
-the neck, and constant-propagates the captured state~\cite{lmcas}. LMCAS targets C
-command-line and server programs, produces one specialized binary per supplied
-input, lifts nothing to types, and deliberately preserves indirect-call targets.
-Our contribution over this pair is the recovery of \emph{persisted module-level}
-configuration state that survives unchanged across an entire compute phase in
-production Fortran, and its use to drive the three specializations below.
+The pattern we exploit was named by Autrey and Wolfe, whose staging analysis first identified \emph{glacial} variables---set once, read throughout---by relative modification and reference frequency~\cite{glacial}; we adopt their term but recover values statically from the configuration file rather than classifying by frequency. The mechanism closest to ours is LMCAS, which splits a program at a ``neck'' between configuration parsing and main logic, partially interprets up to the neck, and constant-propagates the captured state~\cite{lmcas}. LMCAS targets C command-line and server programs, produces one specialized binary per supplied input, lifts nothing to types, and deliberately preserves indirect-call targets. Our contribution over this pair is the recovery of \emph{persisted module-level} configuration state that survives unchanged across an entire compute phase in production Fortran, and its use to drive the three specializations below.
 
 \paragraph{Type-based devirtualization.}
-Devirtualization is well studied: class-hierarchy analysis proves a call site
-monomorphic from the program's type structure~\cite{cha_dgc}; LLVM's whole-program
-devirtualization keys entirely off \texttt{!type} metadata and v-table
-contents~\cite{wholeprogramdevirt}; and type-specializing JITs such as Julia infer
-types from \emph{runtime} argument flow~\cite{julia}. Every one of these derives
-its callee set from type information that is already present---structural metadata
-or observed runtime types. We invert the direction: we extend interval/value-set
-analysis from integral values to \emph{types}, recovering a configuration value and
-the finite type-set it admits, and use that to prune dispatch ahead of deployment.
-To our knowledge no prior analysis drives devirtualization from a
-configuration-recovered value domain; in our dataflow backend this is also what
-makes the polymorphic solver lowerable at all.
+Devirtualization is well studied: class-hierarchy analysis proves a call site monomorphic from the program's type structure~\cite{cha_dgc}; LLVM's whole-program devirtualization keys entirely off \texttt{!type} metadata and v-table contents~\cite{wholeprogramdevirt}; and type-specializing JITs such as Julia infer types from \emph{runtime} argument flow~\cite{julia}. Every one of these derives its callee set from type information that is already present---structural metadata or observed runtime types. We invert the direction: we extend interval/value-set analysis from integral values to \emph{types}, recovering a configuration value and the finite type-set it admits, and use that to prune dispatch ahead of deployment. To our knowledge no prior analysis drives devirtualization from a configuration-recovered value domain.
 
 \paragraph{Configuration-driven debloating and specialization.}
-A debloating line specializes whole programs to a configuration to shrink them or
-their attack surface: TRIMMER propagates constants from C manifest
-files~\cite{trimmer}, OCCAM-v2 partially evaluates a program against its
-deployment context~\cite{occamv2}, and others remove unused option-guarded
-code~\cite{eurosec_debloat,ternava_sac}. These read configuration, but each binds
-every parameter to a \emph{single} value and emits \emph{one} artifact, optimizing
-for size or security; they neither exploit small finite domains as a
-cross-product nor select a covering set of binaries for performance. Their
-constant propagation also halts at the opaque namelist read that we trace across.
+A debloating line specializes whole programs to a configuration to shrink them or their attack surface: TRIMMER propagates constants from C manifest files~\cite{trimmer}, OCCAM-v2 partially evaluates a program against its deployment context~\cite{occamv2}, and others remove unused option-guarded code~\cite{eurosec_debloat,ternava_sac}. These read configuration, but each binds every parameter to a \emph{single} value and emits \emph{one} artifact, optimizing for size or security; they neither exploit small finite domains as a cross-product nor select a covering set of binaries for performance. Their constant propagation also halts at the opaque namelist read that we trace across.
 
 \paragraph{Selecting a set of variants.}
-Choosing several specialized variants to cover a workload is the dual of our
-covering-set step. Input-sensitive autotuning selects among algorithmic
-configurations by a runtime classifier over input
-features~\cite{petabricks_inputaware}, GPU multi-versioning picks a small kernel
-set to maximize best-of-selected performance over a device/input
-distribution~\cite{hochgrafpai,lawson_sycl}, and configurable-systems research
-models or predicts the performance of a configuration to find a single best
-one~\cite{siegmund_fse15}. All of these either dispatch among guarded variants at
-runtime, cover an \emph{input} distribution, or seek one optimal configuration. We
-instead cast variant selection as a greedy set-cover over the distribution of real
-operational \emph{namelists}, and emit fully specialized \emph{unguarded} binaries
-requiring no runtime feature extraction or dispatch.
+Choosing several specialized variants to cover a workload is the dual of our covering-set step. Input-sensitive autotuning selects among algorithmic configurations by a runtime classifier over input features~\cite{petabricks_inputaware}, GPU multi-versioning picks a small kernel set to maximize best-of-selected performance over a device/input distribution~\cite{hochgrafpai,lawson_sycl}, and configurable-systems research models or predicts the performance of a configuration to find a single best one~\cite{siegmund_fse15}. All of these either dispatch among guarded variants at runtime, cover an \emph{input} distribution, or seek one optimal configuration. We instead cast variant selection as a greedy set-cover over a distribution of operational \emph{namelists}, and emit fully specialized \emph{unguarded} binaries requiring no runtime feature extraction or dispatch.
 
 \paragraph{Index narrowing and abstract domains.}
-Static bitwidth analysis narrows integer storage from provable
-ranges~\cite{bitwise}, but cannot reach a bound that is only known after a
-configuration read; our index narrowing derives the range from the array shape a
-configuration fixes. Finally, our unifying lattice---singleton, finite value-set,
-integer interval, and finite type-set under one analysis---is an instance of the
-reduced product of abstract domains~\cite{reducedproduct}, here combining a value
-domain with a finite type-set domain, a combination we are not aware of in prior
-specialization work. The closest analysis over collections is
-MEMORY~\cite{memory_cgo24}, which performs live-range analysis and dead-element
-elimination on aggregate data structures; it is neither general over the domain
-kinds we consider nor applied to configuration recovery, and it requires the
-optimization to be written by hand rather than driven from a configuration file.
+Static bitwidth analysis narrows integer storage from provable ranges~\cite{bitwise}, but cannot reach a bound that is only known after a configuration read; our index narrowing derives the range from the array shape a configuration fixes. Finally, our unifying lattice---singleton, finite value-set, integer interval, and finite type-set under one analysis---is an instance of the reduced product of abstract domains~\cite{reducedproduct}, here combining a value domain with a finite type-set domain, a combination we are not aware of in prior specialization work. The closest analysis over collections is MEMORY~\cite{memory_cgo24}, which performs live-range analysis and dead-element elimination on aggregate data structures; it is neither general over the domain kinds we consider nor applied to configuration recovery, and it requires the optimization to be written by hand rather than driven from a configuration file.

@@ -2,84 +2,45 @@
 \label{sec:background}
 
 \subsection{Configuration as glacial module state}
-A production Earth-system or materials model is parameterized by a configuration
-file---a Fortran \emph{namelist} of a few hundred variables that select solvers,
-toggle physics, and fix grid and spectral dimensions. At startup the model executes
-\lstinline[style=fortran]|READ(NML=...)| once, depositing each value into a field
-of a derived type in a configuration module (in ICON, \texttt{mo\_run\_config},
-\texttt{mo\_dynamics\_config}, \texttt{mo\_nonhydrostatic\_config}). Every consumer
-then reaches the value through \lstinline[style=fortran]|USE module, ONLY: var|.
-These variables are written exactly once, at initialization, and only read during
-the thousands of timesteps that follow: they are \emph{glacial}~\cite{glacial}. They
-are also exactly the values a compiler cannot see---read behind an I/O barrier,
-held in module-level state, and consumed in a compute phase the compiler does not
-distinguish from initialization.
+A production Earth-system or materials model is parameterized by a configuration file: a Fortran \emph{namelist} of a few hundred variables that select solvers, toggle physics, and fix grid and spectral dimensions. At startup the model executes \lstinline[style=fortran]|READ(NML=...)| once, depositing each value into a field of a derived type in a configuration module (in ICON, \texttt{mo\_run\_config}, \texttt{mo\_dynamics\_config}, \texttt{mo\_nonhydrostatic\_config}). Every consumer then reaches the value through \lstinline[style=fortran]|USE module, ONLY: var|. These variables are written once, at initialization, and only read during the thousands of timesteps that follow: they are \emph{glacial}~\cite{glacial}. They are also exactly the values a compiler cannot see: read behind an I/O barrier, held in module-level state, and consumed in a compute phase the compiler does not distinguish from initialization.
 
 \subsection{Why \texttt{-O3} and LTO do not help}
 \label{sec:whycompilers}
-It is tempting to assume that whole-program optimization recovers these constants.
-To test this precisely we take the NAS~LU benchmark as a single translation unit
-whose \texttt{COMMON} blocks are rewritten to module variables---the same shape as a
-configuration module---and ask whether the LLVM pipeline can fold a representative
-grid bound (\texttt{nz}) into the dozens of loops that use it.
-\Cref{tab:lu} reports the result across three settings (flang-new-21,
-LLVM~21).\footnote{Full reproduction (HLFIR + LLVM IR at \texttt{-O0/-O2/-O3} and the
-whole-program LTO test): \texttt{experiments/lu\_globals/reproduce.sh}.}
+To test whole-program optimization precisely we take NAS~LU as a single translation unit whose \texttt{COMMON} blocks are rewritten to module variables, the same shape as a configuration module, and ask whether the LLVM pipeline can turn a representative grid bound (\texttt{nz}) into a compile-time constant in the loops that use it. \Cref{tab:lu} reports the outcome (flang-new-21, LLVM~21); a minimal microkernel and the full LU run reproduce every row.\footnote{Reproduction (HLFIR, LLVM IR at \texttt{-O0/-O2/-O3}, whole-program LTO, PGO, and a 22-way correctness harness): \texttt{experiments/lu\_globals/}.}
 
 \begin{table}[t]
   \centering
-  \caption{\textbf{[PROVISIONAL --- experiment under revision, see PLAN.md.]} Folding
-  a configuration-style module global (\texttt{nz}, a loop bound) in NAS~LU. SCCP never
-  participates (an SSA-value pass; globals are memory). Rows A/B are solid; row C is
-  currently only a presence-gated partial fold (the injection was a runtime store, not
-  a source constant) and must be redone.}
+  \caption{Turning a configuration-style module bound (\texttt{nz}) into a compile-time constant in NAS~LU. Only rewriting the bound to a source constant (the last row) yields a literal; injecting the namelist variable and running LTO leaves the \emph{derived} bound guarded. SCCP never participates: it is an SSA-value pass and globals are memory.}
   \label{tab:lu}
   \small
-  \begin{tabular}{@{}lll@{}}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}p{5.4cm}l@{}}
     \toprule
-    Setting & Linkage & \texttt{nz} bound folded? \\
+    How \texttt{nz} is known & Loop bound \\
     \midrule
-    A. as-is, \texttt{-O3} (value never set in TU)        & external & \textbf{no} --- value absent \\
-    B. runtime store, single-TU \texttt{-O3}              & external & \textbf{no} --- external linkage \\
-    C. runtime store, whole-program LTO + internalize     & demoted to \texttt{i1} & \textbf{partial} --- presence-gated \\
+    as-is, \texttt{-O3} (value absent)                 & runtime load \\
+    as-is, whole-program LTO                            & runtime load \\
+    namelist var \texttt{nz0} as const, \texttt{-O3}    & runtime load \\
+    namelist var \texttt{nz0} as const, LTO             & guarded \texttt{select} \\
+    bound rewritten to a source constant                & literal (folds) \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\td{TODO/CORRECTION (skeptical review): row C does NOT cleanly fold \texttt{nz}.
-GlobalOpt demoted the global to a one-bit "has-init-run" flag and rematerialized the
-bound as \texttt{select i1 \%flag, i32 33, i32 0} (6 sites; 21 others got literal 33),
-because the value was injected as a RUNTIME STORE, not a source constant. REDO injecting
-a Fortran \texttt{parameter} / constant initializer (what config-prop produces) for a
-clean fold; add a row with a real \texttt{READ(NML=...)} so row A is literally the I/O
-barrier; tie the metric to "bound is a compile-time constant", not load-counts.}
+Two barriers keep the as-is bound a runtime value at every level, LTO included. \emph{Value presence}: with no constant in the program there is nothing to fold, because the value enters through the I/O barrier. \emph{Linkage}: an external-linkage module or \texttt{COMMON} global is not foldable in a single unit, since another unit may write it; only whole-program closure (LTO with internalization) removes this. A source \texttt{parameter} sidesteps both, which is why it folds at plain \texttt{-O3}.
 
-Rows A and B isolate two real barriers: \emph{value presence} (A --- with no constant
-in the program nothing can be folded) and \emph{linkage} (B --- an external-linkage
-module/\texttt{COMMON} global is not foldable single-TU; a unit must assume another may
-write it). \td{QUESTION: is the third regime (a true source-constant injection in a
-closed program) a CLEAN fold? Until the redo, claim only that config-prop supplies a
-source-level constant the pipeline otherwise lacks; do not assert "LTO folds it."}
-Production configuration state fails the value-presence and linkage conditions; whether
-the residual is "structural" in the strong sense needs the redone row C.
+A third barrier appears once the value is present. Inject the namelist variable \texttt{nz0} as a source constant and it folds, but the loops do not read \texttt{nz0}; they read \texttt{nz}, and \lstinline[style=fortran]|domain()| copies \texttt{nz = nz0} at runtime. That makes \texttt{nz} a write-once global. LLVM detects this (\texttt{GlobalStatus} marks it stored-once and \texttt{GlobalOpt} acts on it), but when a load may precede the store it cannot substitute the constant. It demotes \texttt{nz} to a one-bit ``initialized yet?'' flag and rematerializes the bound as \texttt{select i1 \%f, i32 16, i32 0}, a runtime guard rather than a constant. So even injection plus whole-program LTO, the strongest standard-tool baseline, leaves the trip count a runtime value; production code routinely launders configuration through such derived globals.
 
 \subsection{What deployment-time specialization adds}
-\Cref{tab:lu} also delimits what is \emph{not} novel: once a scalar value is supplied
-\emph{as a source constant} to a closed program, the standard cascade---constant
-propagation, dead-code elimination, fusion---does the rest (subject to the row-C redo). Our contribution for
-that case is the bridge of \Cref{sec:recovery}: recovering the value statically from
-the configuration file, the one input the compiler structurally cannot obtain. The
-contributions that go \emph{beyond} a supplied scalar---narrowing index storage
-from a recovered interval, and devirtualizing from a recovered type-set
-(\Cref{sec:spec})---are optimizations the right column of \Cref{tab:lu} does not
-perform at any setting, and are where the bulk of our speedup originates.
+\Cref{tab:lu} delimits what is \emph{not} novel: once a scalar reaches a loop bound as a source constant with no derived indirection, the standard cascade (constant propagation, dead-code elimination, fusion) does the rest. Our contribution for that case is the bridge of \Cref{sec:recovery}, recovering the value statically from the configuration file and rewriting the bound to it, which is the one input the compiler structurally cannot obtain and the step that clears the derived-global guard. The contributions that go \emph{beyond} a supplied scalar, narrowing index storage from a recovered interval and devirtualizing from a recovered type-set (\Cref{sec:spec}), are optimizations no setting in \Cref{tab:lu} performs, and are where we expect the bulk of the speedup.
 
 \td{DEEP ARG A (PLAN.md 2.A) --- phase-ordering / config-prop reparameterizes the
 INPUT. Toolchain $B=(T_n\circ\dots\circ T_1)(S)$ ends in LTO; the config value
 $v=F(\mathrm{var})$ is not derivable from $S$ at any phase, so the terminal LTO sink
 cannot fold it. Config-prop is not a phase: it computes
-$\mathrm{compile}(\mathrm{inject}(S,F))$. LU row C is this with inject done by hand;
-row A is $\mathrm{compile}(S)$. "Why not LTO" fails on phase-ordering, not capability.}
+$\mathrm{compile}(\mathrm{inject}(S,F))$. The injected-\texttt{nz0} rows are this with
+inject done by hand (and still short of the derived bound); the as-is rows are
+$\mathrm{compile}(S)$. "Why not LTO" fails on phase-ordering, not capability.}
 \td{DEEP ARG D (PLAN.md 2.D) --- the "isn't this just recompile-per-config?"
 three-layer floor: (1) UNAVAILABLE (values are runtime reads into mutable external
 module state; baking in needs the glacial may-write proof = the contribution);

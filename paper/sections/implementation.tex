@@ -1,21 +1,7 @@
 \section{Implementation}
 \label{sec:impl}
 
-\td{Built on the DaCe dataflow compiler + its Fortran frontend (\texttt{f2dace}):
-\texttt{flang -fc1 -emit-hlfir} $\to$ MLIR normalisation $\to$ SDFG $\to$ specialise
-$\to$ regenerate a \texttt{bind(c)} wrapper. List the passes: glacial recovery,
-\texttt{propagate\_if\_cond}, \texttt{LiftTrivialIf}, \texttt{compress\_indices}
-(\#3), \texttt{\_monomorphize\_solver} (\#4), the covering-set linker.}
-\td{INTEGRATION-AS-A-PASS (reviewer-facing): the value$\to$type devirtualization
-belongs at the FIR/HLFIR level, where \texttt{fir.dispatch} and the type descriptor
-are explicit and the dynamic type is recoverable --- by LLVM IR the type info has
-been erased into a descriptor-table indirect call. So the approach is a
-\emph{FIR-level pass}, prototyped via our DaCe HLFIR consumption and a natural Flang
-upstream; it is not DaCe-specific. The scalar bridge (C1) is an IPSCCP-seeding pass
-(seed glacial globals with recovered constants). Frame whole-program
-devirtualization for C++ as the precedent we extend to a new dispatch model and a
-new driver (config value, not the type hierarchy).}
-\td{Multi-variant linking: per-variant \texttt{ld -r} + \texttt{objcopy
---localize-symbols} on colliders; public per-SDFG entry points stay global for
-name-based startup dispatch.}
+\td{Built on the DaCe dataflow compiler + its Fortran frontend (\texttt{f2dace}): \texttt{flang -fc1 -emit-hlfir} $\to$ MLIR normalisation $\to$ SDFG $\to$ specialise $\to$ regenerate a \texttt{bind(c)} wrapper. List the passes: glacial recovery, \texttt{propagate\_if\_cond}, \texttt{LiftTrivialIf}, \texttt{compress\_indices} (\#3), \texttt{\_monomorphize\_solver} (\#4), the covering-set linker.}
+\td{INTEGRATION-AS-A-PASS (reviewer-facing): the value$\to$type devirtualization belongs at the FIR/HLFIR level, where \texttt{fir.dispatch} and the type descriptor are explicit and the dynamic type is recoverable --- by LLVM IR the type info has been erased into a descriptor-table indirect call. So the approach is a \emph{FIR-level pass}, prototyped via our DaCe HLFIR consumption and a natural Flang upstream; it is not DaCe-specific. The scalar bridge (C1) is an IPSCCP-seeding pass (seed glacial globals with recovered constants). Frame whole-program devirtualization for C++ as the precedent we extend to a new dispatch model and a new driver (config value, not the type hierarchy).}
+\td{Multi-variant linking: per-variant \texttt{ld -r} + \texttt{objcopy --localize-symbols} on colliders; public per-SDFG entry points stay global for name-based startup dispatch.}
 \td{Serde determinism (DaCe PR \#2392) underpins reliable SDFG round-tripping.}

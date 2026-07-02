@@ -1,31 +1,10 @@
-\section{The Variant Economy}
+\section{Selecting Deployment Variants}
 \label{sec:variants}
 
-\td{C3. Position as a SYSTEMS contribution (the combination), not an algorithmic
-one --- the PC was clear set-cover-for-variants is SPL prior art.}
+\td{C3. Position as a SYSTEMS contribution (the combination), not an algorithmic one --- the PC was clear set-cover-for-variants is SPL prior art.}
 
-\td{Cross-product blow-up control: a threshold $K$ on $\prod_i|S_i|$; above it, fall
-back to a runtime guard for the high-cardinality variable.}
-\td{Minimal covering set: greedy weighted set-cover over the empirical distribution
-$\mathfrak D$ of operational namelists, minimizing binary count under a runtime-cost
-objective. Each member is an UNGUARDED whole-program binary; startup dispatch picks
-the cell the deployed namelist inhabits.}
-\td{DEEP ARG B consequence (PLAN.md 2.B) --- "unguarded" is not a design choice but a
-CONSEQUENCE of the config file's certainty: because the namelist is authoritative
-(unlike a PGO profile), each binary is valid for its exactly-specified region with no
-per-call guard, so the only check is once at startup --- and the covering set exists
-precisely to make that one startup choice land in a pre-built region. Contrast RIFS's
-mandatory per-call guard.}
-\td{Differentiate: Hochgraf \& Pai~\cite{hochgrafpai} cluster GPU tuning params with
-a runtime regressor over guarded variants; input-sensitive autotuning
-\cite{petabricks_inputaware,lawson_sycl} dispatches at runtime over an INPUT
-distribution. Ours: static set-cover over a CONFIG (namelist) distribution,
-unguarded. Hedge that a facility-location/portfolio paper from an unsurveyed venue
-could pre-empt the combination.}
-\td{CONCEDE (hard-to-answer, skeptical review): the covering-set EVALUATION needs a
-probability-weighted distribution $\mathfrak D$ of REAL OPERATIONAL namelists with
-deployment frequencies, which we do not have. In-tree \texttt{icon-model/run/} decks are
-developer/tutorial configs, NOT operational deployments, and carry no frequency weights.
-Either secure real decks (DKRZ/ECMWF) or reframe C3 honestly as a METHODOLOGY + worked
-example on an illustrative distribution, and drop the probability-weighted-objective
-claim until then.}
+\td{Cross-product blow-up control: a threshold $K$ on $\prod_i|S_i|$; above it, fall back to a runtime guard for the high-cardinality variable.}
+\td{Minimal covering set: greedy weighted set-cover over the empirical distribution $\mathfrak D$ of operational namelists, minimizing binary count under a runtime-cost objective. Each member is an UNGUARDED whole-program binary; startup dispatch picks the cell the deployed namelist inhabits.}
+\td{DEEP ARG B consequence (PLAN.md 2.B) --- "unguarded" is not a design choice but a CONSEQUENCE of the config file's certainty: because the namelist is authoritative (unlike a PGO profile), each binary is valid for its exactly-specified region with no per-call guard, so the only check is once at startup --- and the covering set exists precisely to make that one startup choice land in a pre-built region. Contrast RIFS's mandatory per-call guard.}
+\td{Differentiate: Hochgraf \& Pai~\cite{hochgrafpai} cluster GPU tuning params with a runtime regressor over guarded variants; input-sensitive autotuning \cite{petabricks_inputaware,lawson_sycl} dispatches at runtime over an INPUT distribution. Ours: static set-cover over a CONFIG (namelist) distribution, unguarded. Hedge that a facility-location/portfolio paper from an unsurveyed venue could pre-empt the combination.}
+\td{CONCEDE (hard-to-answer, skeptical review): the covering-set EVALUATION needs a probability-weighted distribution $\mathfrak D$ of REAL OPERATIONAL namelists with deployment frequencies, which we do not have. In-tree \texttt{icon-model/run/} decks are developer/tutorial configs, NOT operational deployments, and carry no frequency weights. Either secure real decks (DKRZ/ECMWF) or reframe C3 honestly as a METHODOLOGY + worked example on an illustrative distribution, and drop the probability-weighted-objective claim until then.}

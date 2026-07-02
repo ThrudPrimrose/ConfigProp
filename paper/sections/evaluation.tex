@@ -1,98 +1,50 @@
 \section{Evaluation}
 \label{sec:eval}
 
-\td{EVALUATION IS THE MAKE-OR-BREAK. The PC verdict was unanimous: static codegen
-proxies are not enough; we need end-to-end wall-clock speedups. Everything below is
-a placeholder until the cluster runs land.}
+\td{EVALUATION IS THE MAKE-OR-BREAK. The PC verdict was unanimous: static codegen proxies are not enough; we need end-to-end wall-clock speedups. Everything below is a placeholder until the cluster runs land.}
 
 \subsection{Experimental setup}
 \label{sec:eval:setup}
-\td{Case studies: ICON \texttt{velocity\_tendencies} (+ full dycore), ECMWF ecRad
-(TripleClouds/ecCKD), Quantum ESPRESSO (\texttt{vexx}). State versions, grids
-(ICON R02B05), namelists used.}
-\td{Platforms: NVIDIA GH200 (sm\_90a) and AMD MI300A (gfx942). Pin clocks; report
-median of $N$ runs; state warm-up.}
-Baselines, in order of strength: (i) \texttt{gfortran -O3 -flto};
-(ii) \texttt{flang-new -O3 -flto}; (iii) \texttt{nvfortran -O4}, the production HPC
-baseline;\footnote{We confirmed on nvfortran 26.3 that the interprocedural-analysis
-flag \texttt{-Mipa} is deprecated and ignored, so even \texttt{-O4} performs no
-interprocedural constant propagation across the namelist read.} (iv) the strongest
-standard-tool baseline---\emph{the recovered config values injected as constants under
-whole-program LTO}---which isolates the scalar cascade from our type/interval
-contributions.
-\td{Fill in versions, flags, and confirm gfortran/flang LTO actually run on each
-case study; report what each baseline does and does not fold.}
+\td{Case studies: ICON \texttt{velocity\_tendencies} (+ full dycore), ECMWF ecRad (TripleClouds/ecCKD), Quantum ESPRESSO (\texttt{vexx}). State versions, grids (ICON R02B05), namelists used.}
+\td{Platforms: NVIDIA GH200 (sm\_90a) and AMD MI300A (gfx942). Pin clocks; report median of $N$ runs; state warm-up.}
+Baselines, in order of strength: (i) \texttt{gfortran -O3 -flto}; (ii) \texttt{flang-new -O3 -flto}; (iii) \texttt{nvfortran -O4}, the production HPC baseline;\footnote{We confirmed on nvfortran 26.3 that \texttt{-Mipa} is deprecated and ignored (\texttt{nvfortran-Warning-The option -Mipa has been deprecated and is ignored}) and that \texttt{-flto} is unrecognized; the only surviving interprocedural optimization is inlining, so even \texttt{-O4} performs no constant propagation across the namelist read into module state.} (iv) \texttt{nvfortran -O4} with profile-guided optimization;\footnote{PGO is available in every toolchain we test (GCC and LLVM \texttt{-fprofile-generate}/\texttt{-fprofile-use}, nvfortran \texttt{-Mpfi}/\texttt{-Mpfo}). We include it because it is the obvious ``did you try PGO?'' baseline, but it does not help here: on the LU kernel PGO adds branch weights and leaves the configuration global a runtime load, and \texttt{nvfortran -O4 -Mpfo=indirect} leaves the polymorphic dispatch a single indirect \texttt{callq *(\%rax)} with no direct promotion. PGO reweights branches and can \emph{speculatively} promote a hot indirect target behind a runtime guard; it never folds a configuration global or removes dispatch unconditionally.} (v) the strongest standard-tool baseline---\emph{the recovered config values injected as constants under whole-program LTO}---which isolates the scalar cascade from our type/interval contributions.
+\td{Fill in versions, flags, and confirm gfortran/flang LTO actually run on each case study; report what each baseline does and does not fold.}
 
 \subsection{RQ1: the configuration tax is structural}
 \label{sec:eval:rq1}
-The NAS~LU experiment (\Cref{tab:lu}, \Cref{sec:whycompilers})\footnote{Reproduction
-script and IR artifacts: \texttt{experiments/lu\_globals/reproduce.sh}.} already
-shows even \texttt{-O3}+LTO cannot fold a config-style module global without both a
-source constant and link-time internalization.
-\td{Extend Table~\ref{tab:lu} to $\ge 3$ kernels (LU, a velocity loop, an ecRad
-loop) to show the barrier is not LU-specific.}
-\td{Add \texttt{nvfortran -O4} and \texttt{gfortran -O3 -flto} columns to show no
-production compiler folds it either.}
+The NAS~LU experiment (\Cref{tab:lu}, \Cref{sec:whycompilers})\footnote{Reproduction script and IR artifacts: \texttt{experiments/lu\_globals/reproduce.sh}.} already shows even \texttt{-O3}+LTO cannot fold a config-style module global without both a source constant and link-time internalization.
+\td{Extend Table~\ref{tab:lu} to $\ge 3$ kernels (LU, a velocity loop, an ecRad loop) to show the barrier is not LU-specific.}
+\td{Add \texttt{nvfortran -O4} and \texttt{gfortran -O3 -flto} columns to show no production compiler folds it either.}
 
 \subsection{RQ2: per-optimization effect}
 \label{sec:eval:rq2}
 \td{TABLE T2 --- one row per optimization, with the ISOLATED contribution:}
 \begin{itemize}
   \item \td{\#1 always-fixed const-prop: branches eliminated; speedup.}
-  \item \td{\#2 finite-set fusion: \textbf{ISOLATE fusion from dead-block pruning}
-  (the PC flagged the gross 56$\to$28 loop-nest count as conflated). Report
-  within-block map-merge counts attributable to fusion alone, vs.\ one unspecialized
-  binary carrying the union of branches + a runtime guard each timestep.}
-  \item \td{\#3 index narrowing: index-traffic bytes (int32$\to$uint16/uint8) and
-  the resulting DRAM-traffic / speedup on the bandwidth-bound kernels.}
-  \item \td{\#4 devirtualization: dispatch-count $\to 0$ on \emph{real} ICON-O
-  (not a fixture), and the \emph{reachability} result --- the polymorphic solver is
-  unlowerable to the dataflow IR until devirtualized.}
+  \item \td{\#2 finite-set fusion: \textbf{ISOLATE fusion from dead-block pruning} (the PC flagged the gross 56$\to$28 loop-nest count as conflated). Report within-block map-merge counts attributable to fusion alone, vs.\ one unspecialized binary carrying the union of branches + a runtime guard each timestep.}
+  \item \td{\#3 index narrowing: index-traffic bytes (int32$\to$uint16/uint8) and the resulting DRAM-traffic / speedup on the bandwidth-bound kernels.}
+  \item \td{\#4 devirtualization: dispatch-count $\to 0$ on \emph{real} ICON-O (not a fixture), and the \emph{reachability} result --- the polymorphic solver is unlowerable to the dataflow IR until devirtualized.}
 \end{itemize}
 
 \subsection{RQ3: end-to-end speedup}
 \label{sec:eval:rq3}
-\td{TABLE T3 --- per-timestep wall-clock speedup over each baseline on
-\{ICON, ecRad, QE\} $\times$ \{GH200, MI300A\}. THIS IS THE HEADLINE NUMBER AND IT
-DOES NOT EXIST YET.}
-\td{Report the geomean and per-case bars; include the "automatically recovers the
-hand-tuned gain" comparison against a manually specialized binary (recover $\ge X\%$
-of the manual gain).}
+\td{TABLE T3 --- per-timestep wall-clock speedup over each baseline on \{ICON, ecRad, QE\} $\times$ \{GH200, MI300A\}. THIS IS THE HEADLINE NUMBER AND IT DOES NOT EXIST YET.}
+\td{Report the geomean and per-case bars; include the "automatically recovers the hand-tuned gain" comparison against a manually specialized binary (recover $\ge X\%$ of the manual gain).}
 
 \subsection{RQ4: isolating the contributions beyond the scalar cascade}
 \label{sec:eval:rq4}
-We must show our speedup is \emph{not} just constant injection + LTO. The key
-baseline is the recovered values injected as constants under whole-program LTO; our
-gain above it is exactly the type-set devirtualization and index narrowing.
+We must show our speedup is \emph{not} just constant injection + LTO. The key baseline is the recovered values injected as constants under whole-program LTO; our gain above it is exactly the type-set devirtualization and index narrowing.
 \td{Report devirt+narrowing speedup ABOVE the LTO-injected-constant baseline.}
 \paragraph{Devirtualization is unavailable in the standard Fortran path.}
-No production Fortran toolchain devirtualizes the dispatch even when the dynamic
-type is known. Whole-program devirtualization\footnote{Clang/LLVM whole-program
-devirtualization operates only on C++-style vtables via \texttt{!type} metadata and
-the \texttt{llvm.type.test} intrinsic; see
-\url{https://clang.llvm.org/docs/LTOVisibility.html} and
-\url{https://llvm.org/docs/TypeMetadata.html}.} is C++-vtable-specific:
-\texttt{flang-new} does not accept \texttt{-fwhole-program-vtables}, emits no
-\texttt{!type}/\texttt{llvm.type.test} metadata, and lowers Fortran polymorphism
-through a runtime type-descriptor binding table; \texttt{nvfortran -O4} leaves the
-dispatch as an indirect \texttt{callq *(\%rax)}.\footnote{Reproduction:
-\texttt{experiments/devirt\_wpd/}.}
-\td{Turn this paragraph into a small figure/table: flang/nvfortran/clang $\times$
-\{accepts flag, emits \texttt{!type}, devirtualizes\}.}
+No production Fortran toolchain devirtualizes the dispatch even when the dynamic type is known. Whole-program devirtualization\footnote{Clang/LLVM whole-program devirtualization operates only on C++-style vtables via \texttt{!type} metadata and the \texttt{llvm.type.test} intrinsic; see \url{https://clang.llvm.org/docs/LTOVisibility.html} and \url{https://llvm.org/docs/TypeMetadata.html}.} is C++-vtable-specific: \texttt{flang-new} does not accept \texttt{-fwhole-program-vtables}, emits no \texttt{!type}/\texttt{llvm.type.test} metadata, and lowers Fortran polymorphism through a runtime type-descriptor binding table; \texttt{nvfortran -O4} leaves the dispatch as an indirect \texttt{callq *(\%rax)}, and adding profile-guided \texttt{-Mpfo=indirect} does not remove it.\footnote{Reproduction: \texttt{experiments/devirt\_wpd/}.}
+\td{Turn this paragraph into a small figure/table: flang/nvfortran/clang $\times$ \{accepts flag, emits \texttt{!type}, devirtualizes\}.}
 
-\subsection{RQ5: the variant economy}
+\subsection{RQ5: covering-set variant selection}
 \label{sec:eval:rq5}
-\td{FIGURE F3 --- binary-count vs.\ config-coverage curve over a distribution of
-\emph{real operational namelists}. REQUIRES obtaining operational decks (DKRZ ICON,
-ECMWF ecRad); mine \texttt{icon-model/run/} for in-tree example namelists as a
-first distribution.}
-\td{Report build-time and binary-size overhead of the covering set; dispatch cost
-at startup (one check, unguarded hot path).}
+\td{FIGURE F3 --- binary-count vs.\ config-coverage curve over a distribution of \emph{real operational namelists}. REQUIRES obtaining operational decks (DKRZ ICON, ECMWF ecRad); mine \texttt{icon-model/run/} for in-tree example namelists as a first distribution.}
+\td{Report build-time and binary-size overhead of the covering set; dispatch cost at startup (one check, unguarded hot path).}
 
 \subsection{Soundness and overhead}
 \label{sec:eval:overhead}
-\td{Fail-safe guard cost (startup namelist-vs-binary domain check); behavior on
-mismatch (fall back to generic, never silent miscompute).}
-\td{Float-config bit-reproducibility: specializing on an exact namelist float is
-bit-identical to a build compiled with that literal when FP-contraction flags are
-held fixed --- verify bit-for-bit on ecRad.}
+\td{Fail-safe guard cost (startup namelist-vs-binary domain check); behavior on mismatch (fall back to generic, never silent miscompute).}
+\td{Float-config bit-reproducibility: specializing on an exact namelist float is bit-identical to a build compiled with that literal when FP-contraction flags are held fixed --- verify bit-for-bit on ecRad.}
