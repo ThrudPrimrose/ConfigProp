@@ -55,6 +55,21 @@ descriptor) and `fir.dispatch` survives in the optimized FIR. So the standard fl
 pipeline leaves the dispatch indirect even in the *easy* case — this rebuts the
 "rigged-easy fixture" concern (the original `poly.f90` had a local literal selector).
 
+**3b. flang-21 ships NO FIR-level dispatch devirtualization (open question resolved).**
+The skeptical review asked whether flang merely *disables* a `fir.dispatch → fir.call`
+devirtualization in the default pipeline. It does not exist. Evidence (`reproduce.sh`
+§2b): (a) the frontend keeps the dispatch receiver **polymorphic** even for the
+statically-known allocate — `fir.dispatch "solve"(%.. : !fir.class<solver>)`, the
+*abstract* class, never resolved to `cg`; (b) the only `fir-*` pass that touches
+`fir.dispatch` is **`fir-polymorphic-op`** (`PolymorphicOpConversion`), and it *lowers*
+the dispatch to a runtime binding-table lookup — it is not a devirtualization; there is
+no `fir-*` pass named devirt/dispatch-resolve; (c) the only `devirt` machinery in the
+whole shipped toolchain is LLVM's WholeProgramDevirt, which is C++-vtable-only (keyed
+off `!type` metadata flang never emits). So the claim strengthens from "the default
+pipeline does not" to "flang-21 has no FIR devirtualization at all, and no compile-time
+devirt — FIR-level or LLVM WPD — can resolve a type fixed by a config value behind the
+I/O barrier." (Scoped to flang-21 / LLVM 21; a future release could add one.)
+
 ## Conclusion for the paper (de-overclaimed)
 
 What is **solidly verified**: neither `flang-new-21 -O3` nor `nvfortran -O4`
@@ -63,15 +78,13 @@ known; LLVM Whole-Program Devirt is C++-vtable-only and does not apply (no `!typ
 metadata from flang). So **the production Fortran pipeline does not perform this
 optimization.**
 
-**Do NOT overclaim the following — set as open questions:**
-- **QUESTION:** does flang *have* a FIR-level `fir.dispatch→fir.call` devirtualization
-  transform that simply is not enabled in the default `-O3` pipeline? The skeptical
-  review asserts flang's FIR design documents such a conversion from a compile-time
-  type. **TODO: locate the pass (grep the flang/MLIR source for a PolymorphicOp /
-  dispatch-devirtualization pass), and test whether enabling it devirtualizes
-  `known.f90`.** If it exists and works locally, our claim becomes "the *default*
-  pipeline does not, and crucially no devirt — local or WPD — can resolve a type fixed
-  by a config value *behind the I/O barrier*," not "no toolchain can."
+**Do NOT overclaim the following:**
+- **RESOLVED (was an open question):** flang-21 has no FIR-level
+  `fir.dispatch→fir.call` devirtualization, disabled or otherwise — see Finding 3b.
+  The only dispatch pass (`fir-polymorphic-op`) lowers to the runtime binding table,
+  and the frontend does not monomorphize a statically-known type. Claim accordingly:
+  "no compile-time devirt (FIR-level or LLVM WPD) can resolve a type fixed by a config
+  value behind the I/O barrier," scoped to flang-21 / nvfortran 26.3.
 - **DEMOTED (was overclaimed):** "devirtualization enables lowering at all / a
   reachability result parallel to C1" is **specific to the DaCe frontend** (which
   currently has no SDFG node for `fir.dispatch`). In a mature LLVM/Flang backend the

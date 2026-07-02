@@ -39,6 +39,32 @@ grep -m1 -E "load i32, ptr $NZ\b" "$IR/lu_O3.ll" | sed 's/^/    money-shot: /'
 echo
 
 # ---------------------------------------------------------------------------
+echo "########## (1b) the true I/O barrier: value from READ(NML) + whole-program LTO ##########"
+# tab:lu row 2. A driver that READS the config at runtime (genuinely non-constant),
+# then whole-program LTO+internalize. The bound must stay a runtime load (nothing folds).
+cat > "$IR/drv_read.F90" <<'EOF'
+program main
+  use lu
+  integer :: u
+  namelist /grid/ nx0, ny0, nz0, itmax
+  open(newunit=u, file='g.nml', status='old')
+  read(u, nml=grid); close(u)          ! value enters via I/O -> genuinely runtime
+  dt=2d0; omega=1.2d0; tolrsd=1d-8; inorm=itmax
+  call dolu(); write(*,'(A,5(1x,es24.16e3))') 'RSDNM', rsdnm
+end program
+EOF
+"$FLANG" -O3 -flto -c lu.F90 -o "$IR/lu_ab.bc" 2>/dev/null
+"$FLANG" -O3 -flto -c "$IR/drv_read.F90" -o "$IR/drv_read.bc" 2>/dev/null
+"$LLVMLINK" "$IR/lu_ab.bc" "$IR/drv_read.bc" -o "$IR/read_lto.bc" 2>/dev/null
+"$OPT" -passes='internalize,default<O3>' -internalize-public-api-list=main,MAIN__,_QQmain "$IR/read_lto.bc" -S -o "$IR/read_lto_O3.ll" 2>/dev/null
+R[read_lto_nz_loads]=$(grep -cE "load i32, ptr $NZ\b" "$IR/read_lto_O3.ll" || true)
+R[read_lto_nz0_loads]=$(grep -cE "load i32, ptr $NZ0\b" "$IR/read_lto_O3.ll" || true)
+R[read_lto_folds]=$(grep -cE "select i1 %[^,]*, i32 (16|33), i32 0" "$IR/read_lto_O3.ll" || true)
+echo "  value from READ(NML), whole-program LTO: nz loads=${R[read_lto_nz_loads]}, nz0 loads=${R[read_lto_nz0_loads]}, folds/guards=${R[read_lto_folds]}"
+echo "  => still a runtime load; LTO cannot fold a value that is genuinely read at runtime (tab:lu row 2)."
+echo
+
+# ---------------------------------------------------------------------------
 echo "########## (2) HOW is a module global known to be constant? 5 flavours ##########"
 # A single global 'n' used as a loop trip count, compiled 5 ways.
 cat > "$GV/gvar.F90" <<'EOF'

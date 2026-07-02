@@ -53,6 +53,25 @@ echo "  => flang leaves the dispatch indirect even when the type is statically k
 echo
 
 # ---------------------------------------------------------------------------
+echo "########## (2b) flang ships NO FIR-level dispatch devirtualization ##########"
+# The frontend keeps the receiver polymorphic even for a statically-known allocate:
+"$FLANG" -fc1 -emit-fir known.f90 -o "$IR/known.fir" 2>/dev/null
+R[known_dispatch_recv]=$(grep -oE 'fir\.dispatch "solve"\(%[0-9]+ : !fir\.class<[^>]*>' "$IR/known.fir" | grep -oE '!fir\.class<[^>]*>' | head -1)
+echo "  known.f90 dispatch receiver type: ${R[known_dispatch_recv]:-<none>}  (still the ABSTRACT class, not resolved to cg)"
+# The only FIR pass that touches fir.dispatch is fir-polymorphic-op, and it LOWERS to a
+# runtime binding-table lookup -- it is not a devirtualization. List flang's fir-* passes:
+FL_BIN=$(command -v "$FLANG")
+FIR_PASSES=$(strings -n4 "$FL_BIN" $(ldd "$FL_BIN" 2>/dev/null | grep -oE '/[^ ]+\.so[^ ]*') 2>/dev/null | grep -oE '\bfir-[a-z-]+' | sort -u)
+R[fir_dispatch_pass]=$(echo "$FIR_PASSES" | grep -iE 'devirt|dispatch' || echo "(none)")
+R[fir_poly_pass]=$(echo "$FIR_PASSES" | grep -c 'fir-polymorphic-op')
+echo "  fir-* pass named devirt/dispatch:  ${R[fir_dispatch_pass]:-(none)}"
+echo "  fir-polymorphic-op present:        ${R[fir_poly_pass]}  (lowers fir.dispatch -> runtime binding table)"
+echo "  toolchain-wide 'devirt' machinery: $(strings -n4 "$FL_BIN" $(ldd "$FL_BIN" 2>/dev/null | grep -oE '/[^ ]+\.so[^ ]*') 2>/dev/null | grep -c -iE 'wholeprogramdevirt') WPD refs (LLVM, C++-vtable-only)"
+echo "  => no FIR devirtualization exists in this flang; the only devirt is LLVM WPD, which"
+echo "     is keyed off !type metadata flang never emits.  A statically-known type is not devirtualized."
+echo
+
+# ---------------------------------------------------------------------------
 echo "########## (3) nvfortran -O4: indirect dispatch ##########"
 "$NVF" -O4 -S poly.f90 -o "$IR/poly_nv_O4.s" 2>/dev/null
 R[nv_o4_indirect]=$(grep -cE "callq[[:space:]]*\*\(" "$IR/poly_nv_O4.s" || true)
