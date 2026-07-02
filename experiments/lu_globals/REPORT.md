@@ -28,6 +28,7 @@ which is all the per-compiler greps differ by:
 | Reported value | Exact command | Result |
 |---|---|---|
 | as-is `-O3`, `nz` still loaded | `grep -c 'load i32, ptr @_QMluEnz' ir/lu_O3.ll` | 8 |
+| value from real `READ(NML)` + whole-program LTO | `grep -c 'load i32, ptr @_QMluEnz' ir/read_lto_O3.ll` | 7 (nz0 3, 0 folds) |
 | gvar single-TU folded? | `grep -c 'load i32, ptr @_QMgvEn' gvar/st_<flavour>.ll` (0 ⇒ folded) | per table |
 | once-stored guard selects | `grep -c 'select i1' gvar/guard_wp.ll` | 2 |
 | inject `nz0`+LTO: `nz0` gone | `grep -c 'load i32, ptr @_QMluEnz0' ir/spec_lto_O3.ll` | 0 |
