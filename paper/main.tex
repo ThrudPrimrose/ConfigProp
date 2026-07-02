@@ -18,11 +18,12 @@
 \emergencystretch=3em
 \hfuzz=2pt
 
-% TODO marker: preserved in source, NOT rendered (acts as a comment).
-% Flip to the rendered form below while drafting if you want the boxes back.
-\long\def\td#1{}
-% \usepackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
-% \long\def\td#1{\todo[inline,color=yellow!35,size=\footnotesize]{\textbf{TODO:} #1}}
+% TODO marker. RENDERED as inline yellow boxes while drafting.
+% For a clean/submission build, comment the two todonotes lines and
+% uncomment \long\def\td#1{} to make \td an invisible no-op again.
+% \long\def\td#1{}
+\usepackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
+\long\def\td#1{\todo[inline,color=yellow!35,size=\footnotesize]{\textbf{TODO:} #1}}
 
 % --- Fortran listing style used for the motivating examples -------------------
 \definecolor{cfgkw}{rgb}{0.10,0.10,0.55}
