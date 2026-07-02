@@ -6,6 +6,17 @@ clang-21, nvfortran 26.3.
 
 `poly.f90`: abstract `solver` with `cg`/`gmres` extensions; `run(sel,x)` allocates
 the concrete type by `sel` and calls `s%solve(x)` (the config-style dispatch).
+`known.f90`: same, but `allocate(cg :: s)` unconditional (dynamic type statically known).
+
+## Single click
+
+```bash
+./reproduce.sh   # regenerates all evidence into ir/, writes RESULTS.txt
+./clean.sh       # wipe generated files
+```
+
+Only the sources are kept (`poly.f90`, `known.f90`, the two `*.sh`, this README);
+all IR/asm regenerate.
 
 ## Findings
 
@@ -24,8 +35,18 @@ the concrete type by `sel` and calls `s%solve(x)` (the config-style dispatch).
 **2. `nvfortran -O4` does not devirtualize and has dropped IPA.**
 - The dispatch in `run` lowers to an indirect `callq *(%rax)` — not devirtualized.
 - `-Mipa` is **deprecated and ignored** in nvfortran 26.3
-  (`nvfortran-Warning-The option -Mipa has been deprecated and is ignored`), so even
-  `-O4` performs **no interprocedural constant propagation** across the namelist read.
+  (`nvfortran-Warning-The option -Mipa has been deprecated and is ignored`), and
+  `-flto` is unrecognized, so even `-O4` performs **no interprocedural constant
+  propagation** across the namelist read.
+
+**2b. `nvfortran -O4` + PGO (`-Mpfi`/`-Mpfo=indirect`) still does not devirtualize.**
+Indirect-call profiling is nvfortran's closest mechanism to devirtualization. After
+instrument → run → `-Mpfo=indirect`, the dispatch is **still a single indirect
+`callq *(%rax)`** with **zero** direct `callq …_solve` promotion. PGO can only
+*speculatively* promote a hot target behind a runtime guard; it never removes the
+dispatch unconditionally, and it folds no configuration global. (PGO is universal —
+GCC/LLVM `-fprofile-generate`/`-use`, nvfortran `-Mpfi`/`-Mpfo` — so this is not an
+nvfortran-specific gap.)
 
 **3. flang does not devirtualize even a statically-known type (`known.f90`).**
 With an unconditional `allocate(cg :: s); s%solve(x)` (dynamic type trivially known),
